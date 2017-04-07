@@ -15,10 +15,11 @@ char_nor_height = 32 ;
 plate_nor_width = 160 ;
 plate_nor_height = 48 ;
 plate_wh_upper = 4 ; % 车牌长宽比例上界
-plate_wh_lower = 1.5 ; % 车牌长宽比下界
+plate_wh_lower = 1.2 ; % 车牌长宽比下界
 char_wh_upper = 2.5 ; % 字符长宽比上界
 char_wh_lower = 1.2 ; % 字符长宽比下界
-
+plate_area_width_bias = 10 ; % 车牌假设区域长度偏移
+plate_area_height_bias = 10 ; % 车牌假设区域宽度偏移
 
 %% get image and turn it to hsv space
 %%% 进行一些预处理之后，根据先验知识初步提取出车牌假设区域。
@@ -28,7 +29,7 @@ file_path = [path, file_name] ;
 img = imread(file_path) ;
 merge = getBluePlate(img) ;
 % get hsv blue
-core = ones(6,6) ;
+core = ones(10,10) ;
 merge = imdilate(merge, core) ;
 subplot(2,2,1)
 imshow(img)
@@ -46,7 +47,7 @@ inner = 1 ;
 for i = 1:con_size
     dy = max(con{i}(:,1))-min(con{i}(:,1)) ;
     dx = max(con{i}(:,2)-min(con{i}(:,2))) ;
-    if dx/dy < plate_wh_upper && dx/dy > plate_wh_lower && dx > 20 && dy > 20
+    if dx/dy < plate_wh_upper && dx/dy > plate_wh_lower && dx > 40 && dy > 30
         save_con{inner} = con{i} ;
         inner = inner+1 ;
     end
@@ -54,16 +55,114 @@ end
 
 %% here we need to project transform to refine the plates
 %%% 提取出车牌假设区域的四个特征点，映射到新区域中，做透视变换，矫正其倾斜。
+%%% 连续求导自迭代法
+[eximg, ~] = extractPlate(merge, save_con) ; % extract plate area
+eximg = imgNormal(eximg, plate_nor_width, plate_nor_height) ;
+list = save_con{1} ;
+col_gap = 30 ;
+row_step = 30 ;
+k = 0 ;
+delta = [] ;
+list_new = [list; list(1:row_step,:)] ; % 循环后缀
+list_len = length(list(:,1)) ;
+for i = 1:list_len
+    delta(i) = (list_new(i,1)-list_new(i+row_step,1)) ;
+    if i == 1370
+        subplot(2,2,2)
+        hold on
+        plot(list_new(i,2),list_new(i,1),'r*')
+    end
+    if i == 5+row_step
+        subplot(2,2,2)
+        hold on
+        plot(list_new(i,2),list_new(i,1),'b*')
+    end
+    if i == 140
+        subplot(2,2,2)
+        hold on
+        plot(list_new(i,2),list_new(i,1),'g*')
+    end
+    if i == 154+row_step
+        subplot(2,2,2)
+        hold on
+        plot(list_new(i,2),list_new(i,1),'r*')
+    end
+end
+delta_len = length(delta) ;
+del2 = [] ;
+for i = 1:delta_len-1
+    del2(i) = delta(i+1)-delta(i) ;
+end
+delta_m = abs(delta) >= row_step ;
+del2_m = del2 == 0 ;
+del2_m(298) = 0; 
 
+figure(5)
+subplot(2,1,1)
+stem(delta_m,'r*')
+subplot(2,1,2)
+stem(del2_m,'r*')
+figure(6)
+tina = delta_m.*del2_m ;
+tina_len = length(tina) ;
+tii = [] ;
+for i = 1:tina_len-1
+    tii(i) = tina(i+1)-tina(i) ;
+end
+stem(tii) ;
+a = 0 ;
+% row_max = max(list(:,1));
+% row_min = min(list(:,1));
+% col_max = max(list(:,2)) ;
+% col_min = min(list(:,2)) ;
+% col_min_aroud = abs(col_min-list(:,2)) < 15;
+% col_min_list = list(col_min_aroud == 1,1) ;
+% col_min_row_min = min(col_min_list) ;
+% 
+% col_max_around = abs(col_max-list(:,2)) < 15 ;
+% col_max_list = list(col_max_around == 1, 1) ;
+% col_max_row_max = max(col_max_list) ;
+% % point_11 = [col_min_row_min, col_min] ;
+% % point_12 = [row_min,col_max] ;
+% % point_21 = [row_max,col_min] ;
+% % point_22 = [col_max_row_max, col_max] ;
+% point_11 = [col_min, col_min_row_min] ;
+% point_12 = [col_max,row_min] ;
+% point_21 = [col_min,row_max] ;
+% point_22 = [col_max, col_max_row_max] ;
+% area_old = [point_11;point_12;point_21;point_22] ; % 列优先排序
+% 
+% figure
+% imshow(img)
+% hold on
+% plot(list(:,2),list(:,1),'r*')
+% plot(point_11(1,1),point_11(1,2), 'r*')
+% plot(point_12(1,1),point_12(1,2), 'r*')
+% plot(point_21(1,1),point_21(1,2), 'r*')
+% plot(point_22(1,1),point_22(1,2), 'r*')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% col_bias = 100 ;
+% pointnew_11 = [col_min_row_min, col_min] ;
+% pointnew_12 = [col_min_row_min, col_min+plate_nor_width] ;
+% pointnew_21 = [col_min_row_min+plate_nor_height, col_min] ;
+% pointnew_22 = [col_min_row_min+plate_nor_height, col_min+plate_nor_width] ;
+% area_new = [pointnew_11;pointnew_12;pointnew_21;pointnew_22] ;
+% area_new = [100,100;280,100;100,160;280,160] ;
+% Tran = calc_homography(area_old,area_new) ;
+% Tran = maketform('projective',Tran);   %投影矩阵
+% [imgn, X, Y] = imtransform(img,Tran);     %投影
+% figure
+% imshow(imgn) 
+% hold on
+% plot(col_min,col_min_row_min,'r*')
+% plot(col_max,col_max_row_max,'r*')
 
 
 %% get plate and draw plate in source image
 %%% 在原图中绘制出车牌区域。
-[rimg num] = drawPlate(img, save_con) ;
+[rimg, ~] = drawPlate(img, save_con) ;
 subplot(2,2,3)
 imshow(rimg) % draw plate in origin image
-[eximg, num] = extractPlate(img, save_con) ;
-eximg = imgNormal(eximg, plate_nor_width, plate_nor_height) ;
 
 %% get one plate to test algorithm
 %%% 取出车牌进行预处理，滤波等
