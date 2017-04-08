@@ -1,0 +1,21 @@
+function area_old = getOldArea(points)
+p1 = points(1,:) ;
+p2 = points(2,:) ;
+p3 = points(3,:) ;
+p4 = points(4,:) ;
+pts = [p1;p2;p3;p4] ;
+pts = sortrows(pts,2) ;
+p21_p22 = pts(3:4,:) ;
+p11_p12 = pts(1:2,:) ;
+p21_p22 = sortrows(p21_p22,1) ;
+p11_p12 = sortrows(p11_p12,1) ;
+p21 = p21_p22(1,:) ;
+p22 = p21_p22(2,:) ;
+p11 = p11_p12(1,:) ;
+p12 = p11_p12(2,:) ;
+% p11 = [p11(2),p11(1)] ;
+% p12 = [p12(2),p12(1)] ;
+% p21 = [p21(2),p21(1)] ;
+% p22 = [p22(2),p22(1)] ;
+area_old = [p11;p12;p21;p22] ;
+area_old

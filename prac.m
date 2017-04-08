@@ -57,36 +57,28 @@ end
 %%% 提取出车牌假设区域的四个特征点，映射到新区域中，做透视变换，矫正其倾斜。
 %%% 连续求导自迭代法
 [eximg, ~] = extractPlate(merge, save_con) ; % extract plate area
-eximg = imgNormal(eximg, plate_nor_width, plate_nor_height) ;
+% eximg = imgNormal(eximg, plate_nor_width, plate_nor_height) ;
 list = save_con{1} ;
+list_ww = list ;
+minrow = min(list(:,1)) ;
+mincol = min(list(:,2)) ;
+list_ww(:,1) = list(:,1)-minrow ;
+list_ww(:,2) = list(:,2)-mincol ;
+
+list = list_ww ;
+[pl_img, ~] = extractPlate(img, save_con) ;
+% figure
+% imshow(pl_img{1})
+% hold on
+% plot(list(:,2),list(:,1),'r*')
+
 col_gap = 30 ;
 row_step = 30 ;
-k = 0 ;
 delta = [] ;
 list_new = [list; list(1:row_step,:)] ; % 循环后缀
 list_len = length(list(:,1)) ;
 for i = 1:list_len
     delta(i) = (list_new(i,1)-list_new(i+row_step,1)) ;
-    if i == 1370
-        subplot(2,2,2)
-        hold on
-        plot(list_new(i,2),list_new(i,1),'r*')
-    end
-    if i == 5+row_step
-        subplot(2,2,2)
-        hold on
-        plot(list_new(i,2),list_new(i,1),'b*')
-    end
-    if i == 140
-        subplot(2,2,2)
-        hold on
-        plot(list_new(i,2),list_new(i,1),'g*')
-    end
-    if i == 154+row_step
-        subplot(2,2,2)
-        hold on
-        plot(list_new(i,2),list_new(i,1),'r*')
-    end
 end
 delta_len = length(delta) ;
 del2 = [] ;
@@ -95,67 +87,51 @@ for i = 1:delta_len-1
 end
 delta_m = abs(delta) >= row_step ;
 del2_m = del2 == 0 ;
-del2_m(298) = 0; 
-
-figure(5)
-subplot(2,1,1)
-stem(delta_m,'r*')
-subplot(2,1,2)
-stem(del2_m,'r*')
-figure(6)
+del2_m(length(delta_m)) = 0; 
+delta_m = [0,delta_m] ;
+del2_m = [0,del2_m] ;
 tina = delta_m.*del2_m ;
 tina_len = length(tina) ;
 tii = [] ;
 for i = 1:tina_len-1
     tii(i) = tina(i+1)-tina(i) ;
 end
-stem(tii) ;
+figure
+stem(tii)
+[~,loc1] = find(tii == 1) ;
+[~,loc2] = find(tii == -1) ;
+figure
+imshow(pl_img{1})
+hold on
+plot(list_new(loc1(1),2),list_new(loc1(1),1),'r*')
+plot(list_new(loc1(2),2),list_new(loc1(2),1),'g*')
+plot(list_new(loc2(1)+row_step,2),list_new(loc2(1)+row_step,1),'b*')
+plot(list_new(loc2(2)+row_step,2),list_new(loc2(2)+row_step,1),'y*')
+point1 = [list_new(loc2(1)+row_step,2),list_new(loc2(1)+row_step,1)] ;
+point2 = [list_new(loc1(2),2),list_new(loc1(2),1)] ;
+point3 = [list_new(loc1(1),2), list_new(loc1(1),1)] ;
+point4 = [list_new(loc2(2)+row_step,2),list_new(loc2(2)+row_step,1)] ;
+% point1 = [list_new(loc2(1)+row_step,1),list_new(loc2(1)+row_step,2)] ;
+% point2 = [list_new(loc1(2),1),list_new(loc1(2),2)] ;
+% point3 = [list_new(loc1(1),1),list_new(loc1(1),2)] ;
+% point4 = [list_new(loc2(2)+row_step,1),list_new(loc2(2)+row_step,2)] ; % 行排列优先
+%%% get right old area points
+area_old = [point1;point2;point3;point4] ;
+% area_old = getOldArea([point1; point2; point3; point4]) ;
+% area_old = [list_new(loc1(2),1),list_new(loc1(2),2);list_new(loc1(1),1),list_new(loc1(1),2);list_new(loc2(2)+row_step,1),list_new(loc2(2)+row_step,2);list_new(loc2(1)+row_step,1),list_new(loc2(1)+row_step,2)] ;
+%%%
+% area_old = [point11;point12;point21;point22];
+% plot(list_new(loc2(2)+row_step,2),list_new(loc2(2)+row_step,1),'r*')
 a = 0 ;
-% row_max = max(list(:,1));
-% row_min = min(list(:,1));
-% col_max = max(list(:,2)) ;
-% col_min = min(list(:,2)) ;
-% col_min_aroud = abs(col_min-list(:,2)) < 15;
-% col_min_list = list(col_min_aroud == 1,1) ;
-% col_min_row_min = min(col_min_list) ;
-% 
-% col_max_around = abs(col_max-list(:,2)) < 15 ;
-% col_max_list = list(col_max_around == 1, 1) ;
-% col_max_row_max = max(col_max_list) ;
-% % point_11 = [col_min_row_min, col_min] ;
-% % point_12 = [row_min,col_max] ;
-% % point_21 = [row_max,col_min] ;
-% % point_22 = [col_max_row_max, col_max] ;
-% point_11 = [col_min, col_min_row_min] ;
-% point_12 = [col_max,row_min] ;
-% point_21 = [col_min,row_max] ;
-% point_22 = [col_max, col_max_row_max] ;
-% area_old = [point_11;point_12;point_21;point_22] ; % 列优先排序
-% 
-% figure
-% imshow(img)
-% hold on
-% plot(list(:,2),list(:,1),'r*')
-% plot(point_11(1,1),point_11(1,2), 'r*')
-% plot(point_12(1,1),point_12(1,2), 'r*')
-% plot(point_21(1,1),point_21(1,2), 'r*')
-% plot(point_22(1,1),point_22(1,2), 'r*')
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% col_bias = 100 ;
-% pointnew_11 = [col_min_row_min, col_min] ;
-% pointnew_12 = [col_min_row_min, col_min+plate_nor_width] ;
-% pointnew_21 = [col_min_row_min+plate_nor_height, col_min] ;
-% pointnew_22 = [col_min_row_min+plate_nor_height, col_min+plate_nor_width] ;
-% area_new = [pointnew_11;pointnew_12;pointnew_21;pointnew_22] ;
-% area_new = [100,100;280,100;100,160;280,160] ;
-% Tran = calc_homography(area_old,area_new) ;
-% Tran = maketform('projective',Tran);   %投影矩阵
-% [imgn, X, Y] = imtransform(img,Tran);     %投影
-% figure
-% imshow(imgn) 
-% hold on
-% plot(col_min,col_min_row_min,'r*')
-% plot(col_max,col_max_row_max,'r*')
+
+area_new = [100,100;280,100;100,160;280,160] ;
+
+Tran = calc_homography(area_old,area_new) ;
+Tran = maketform('projective',Tran);   %投影矩阵
+[imgn, X, Y] = imtransform(pl_img{1},Tran);     %投影
+figure
+imshow(imgn) 
+
 
 
 %% get plate and draw plate in source image
