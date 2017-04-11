@@ -3,6 +3,8 @@
 % the teaching demo of plate detection
 % version1.0: simple function, not affine transform, not machine learning
 % algorithms,not smart char divide algorithms
+% version1.1: add projective transform to refine the plate ,with simple
+% recognization technique.
 %%%
 clc
 clear
@@ -83,7 +85,7 @@ dcol = max(list(:,2))-min(list(:,2)) ;
 prop = dcol/drow 
 if prop <= 2.5
     col_gap = 30 ;
-    row_step = 35 ;
+    row_step = 30 ;
     delta = [] ;
     list_new = [list; list(1:row_step,:)] ; % 循环后缀
     list_len = length(list(:,1)) ;
@@ -188,6 +190,10 @@ if prop <= 2.5
     plot(p2(1,1),p2(1,2),'b*')
     plot(p3(1,1),p3(1,2),'g*')
     plot(p4(1,1),p4(1,2),'k*')
+    subplot(2,1,1)
+    for i = 1:length(poss_area(:,1))
+        plot(poss_area(i,1),poss_area(i,2),'r*')
+    end
     area_new = [100,100;100+plate_nor_width,100;100,100+plate_nor_height;100+plate_nor_width,100+plate_nor_height] ;
     a = 1 ;
 
@@ -195,6 +201,9 @@ if prop <= 2.5
     Tran = maketform('projective',Tran);   %投影矩阵
     [imgn, X, Y] = imtransform(img_t,Tran);     %投影
     figure(10)
+    subplot(2,1,1)
+    imshow(img_t)
+    subplot(2,1,2)
     imshow(imgn) 
     
     
