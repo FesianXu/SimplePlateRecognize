@@ -28,7 +28,7 @@ img_resize_height = 600 ;
 %% get image and turn it to hsv space
 %%% 进行一些预处理之后，根据先验知识初步提取出车牌假设区域。
 path = 'F:\opencvjpg\' ;
-file_name = '1014.jpg' ;
+file_name = '1026.jpg' ; % 1028 problem 1023 1026 1028 1015
 file_path = [path, file_name] ;
 img = imread(file_path) ;
 % img = imresize(img,[img_resize_height,img_resize_width]) ;
@@ -73,9 +73,6 @@ con_n_size = size(con_n) ;
 con_n_size = con_n_size(1,1) ;
 save_n_con = {} ;
 inner = 1 ;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for i = 1:con_n_size
     dy = max(con_n{i}(:,1))-min(con_n{i}(:,1)) ;
     dx = max(con_n{i}(:,2))-min(con_n{i}(:,2)) ;
@@ -85,102 +82,98 @@ for i = 1:con_n_size
     end
 end
 list = save_n_con{1} ;
-drow = max(list(:,1))-min(list(:,1)) ;
-dcol = max(list(:,2))-min(list(:,2)) ;
-prop = dcol/drow 
-if prop <= 2.5
-    row_step = 35 ;
-    [corner_list,list_new] = getPlateCorner(list,row_step) ;
 
-    [~,loc1] = find(corner_list == 1) ;
-    [~,loc2] = find(corner_list == -1) ;
-    figure
-    subplot(2,1,1)
-    imshow(img_t)
-    hold on
-    loc_len = length(loc1) ;
-    
-    subplot(2,1,2)
-    imshow(merge)
+%% 尝试用余弦值来判断特征角点
 
-    [~,loc_max_row] = max(list(:,1)) ;
-    [~,loc_min_row] = min(list(:,1)) ;
-    [~,loc_max_col] = max(list(:,2)) ;
-    [~,loc_min_col] = min(list(:,2)) ;
-    max_row = list(loc_max_row,:) ;
-    min_row = list(loc_min_row,:) ;
-    max_col = list(loc_max_col,:) ;
-    min_col = list(loc_min_col,:) ;
-    subplot(2,1,1)
-    hold on
-
-    
-    point1 = [min_col(:,2),min_col(:,1)] ;
-    point2 = [min_row(:,2),min_row(:,1)] ;
-    point3 = [max_row(:,2),max_row(:,1)];
-    point4 = [max_col(:,2),max_col(:,1)] ;
-
-   
-    poss_area = [point1;point2;point3;point4] ; % 列排序优先
-    for i = 1:loc_len
-        poss_area(i+4,:) = [list_new(loc1(i),2), list_new(loc1(i),1)] ;
-    end
-    len = length(poss_area(:,1)) ;
-    for i = 1:loc_len
-        poss_area(len+i,:) = [list_new(loc2(i)+row_step,2),list_new(loc2(i)+row_step,1)] ;
-    end
-    [idx,c] = kmeans(poss_area,2) ;
-    c1 = poss_area(idx == 1,:) ;
-    c2 = poss_area(idx == 2,:) ;
-    ctmp = {c1,c2} ;
-    if c1(1,1) > c2(1,1)
-        c1 = ctmp{2} ;
-        c2 = ctmp{1} ;
-    end
-    [~,c1_max_loc] = max(c1(:,2)) ;
-    [~,c1_min_loc] = min(c1(:,2)) ;
-    [~,c2_max_loc] = max(c2(:,2)) ;
-    [~,c2_min_loc] = min(c2(:,2)) ;
-    p1 = c1(c1_min_loc,:);
-    p2 = c2(c2_min_loc,:) ;
-    p3 = c1(c1_max_loc,:) ;
-    p4 = c2(c2_max_loc,:) ;
-    area_old = [p1;p2;p3;p4] ;
-    figure(2)
-    subplot(2,1,2)
-    hold on
-    plot(p1(1,1),p1(1,2),'r*')
-    plot(p2(1,1),p2(1,2),'b*')
-    plot(p3(1,1),p3(1,2),'g*')
-    plot(p4(1,1),p4(1,2),'k*')
-    subplot(2,1,1)
-    for i = 1:length(poss_area(:,1))
-        plot(poss_area(i,1),poss_area(i,2),'r*')
-    end
-    area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
-    a = 1 ;
-
-    Tran = calc_homography(area_old,area_new) ;
-    Tran = maketform('projective',Tran);   %投影矩阵
-    [imgn, X, Y] = imtransform(img_t,Tran);     %投影
-    figure(10)
-    subplot(3,1,1)
-    imshow(img_t)
-    subplot(3,1,2)
-    imshow(imgn) 
-    imgn_g = rgb2gray(imgn) ;
-    subplot(3,1,3)
-    bwimg = im2bw(imgn_g,0.5) ;
-    imshow(bwimg)
-    img_out = deletePlateFrame(bwimg) ;
-else
-    [eximg, ~] = extractPlate(img, save_con) ; % extract plate area
-    eximg = imgNormal(eximg, plate_nor_width, plate_nor_height) ;
-    imgn = eximg{1} ;
+figure(123)
+imshow(img_t)
+hold on
+step = 100 ;
+sample_step = 1 ;
+list_cos = [list;list(1:step,:)] ;
+list_cos = list_cos(1:sample_step:end,:) ;
+lenlist = length(list_cos(:,1)) ;
+tmpcos = [] ;
+for i = 1:lenlist-step
+    p1 = list_cos(i,:) ;
+    p2 = list_cos(i+step,:) ;
+    pmedian = list_cos(i+step/2,:) ;
+    p1 = [p1(1,2),p1(1,1)] ;
+    p2 = [p2(1,2), p2(1,1)] ;
+    pmedian = [pmedian(1,2), pmedian(1,1)] ;
+    v1 = p1-pmedian ;
+    v2 = p2-pmedian ;
+    tmpcos(i) = v1*v2'/(norm(v1,2)*norm(v2,2)) ;
 end
+tt = [] ;
+j = 1 ;
+for i = 1:lenlist-step
+    if tmpcos(i) > -0.600 && tmpcos(i) < 0.600
+        tt(j,:) = list_cos(i+step/2,:) ;
+        j = j+1 ;
+    end
+end
+figure(123)
+hold on
+max_col = max(list(:,2)) ;
+min_col = min(list(:,1)) ;
+bias = 50 ;
+%%% 除去边框上的特征交点假设区
+left = [] ;
+right = [] ;
+j = 1 ;
+for i = 1:length(tt(:,1))
+    if abs(tt(i,2)-min_col) <= bias
+       left(j,:) = tt(i,:) ;
+       j = j+1 ;
+    end
+end 
+j = 1 ;
+for i = 1:length(tt(:,1))
+    if abs(tt(i,2)-max_col) <= bias
+       right(j,:) = tt(i,:) ;
+       j = j+1 ;
+    end
+end  % get left and right part
 
+[idx_left,~] = kmeans(left,2) ;
+c1 = left(idx_left == 1,:) ;
+c2 = left(idx_left == 2,:) ;
+[idx_right,~] = kmeans(right,2) ;
+c3 = right(idx_right == 1,:) ;
+c4 = right(idx_right == 2,:) ;
+p1 = c1(uint16(length(c1(:,1))/2),:) ;
+p2 = c2(uint16(length(c2(:,1))/2),:) ;
+p3 = c3(uint16(length(c3(:,1))/2),:) ;
+p4 = c4(uint16(length(c4(:,1))/2),:) ;
+if p1(1,1) < p2(1,1)
+    p11 = p1 ;
+    p21 = p2 ;
+else
+    p11 = p2 ;
+    p21 = p1 ;
+end
+if p3(1,1) < p4(1,1)
+    p12 = p3 ;
+    p22 = p4 ;
+else
+    p12 = p4 ;
+    p22 = p3 ;
+end
+%% projective transform
 
+p11 = p11(end:-1:1) ;
+p12 = p12(end:-1:1) ;
+p21 = p21(end:-1:1) ;
+p22 = p22(end:-1:1) ;
 
+area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
+area_old = [p11;p12;p21;p22] ;
+Tran = calc_homography(area_old,area_new) ;
+Tran = maketform('projective',Tran);   %投影矩阵
+[imgn, X, Y] = imtransform(img_t,Tran);     %投影
+figure
+imshow(imgn)
 
 %% get plate and draw plate in source image
 %%% 在原图中绘制出车牌区域。
@@ -195,7 +188,7 @@ gray_img = rgb2gray(plate_temp) ;
 hcore = fspecial('gaussian') ;
 gray_img = imfilter(gray_img, hcore) ;
 % t = graythresh(gray_img) ;
-bin = im2bw(gray_img, 0.5) ;
+bin = im2bw(gray_img, 0.4) ;
 core = ones(2,2) ;
 erode_bin = imerode(bin, core) ;
 figure(5)
