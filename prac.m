@@ -28,7 +28,7 @@ img_resize_height = 600 ;
 %% get image and turn it to hsv space
 %%% 进行一些预处理之后，根据先验知识初步提取出车牌假设区域。
 path = 'F:\opencvjpg\' ;
-file_name = '1026.jpg' ; % 1028 problem 1023 1026 1028 1015
+file_name = '1043.jpg' ; % 1028 problem 1023 1026 1028 1015
 file_path = [path, file_name] ;
 img = imread(file_path) ;
 % img = imresize(img,[img_resize_height,img_resize_width]) ;
@@ -65,7 +65,7 @@ end
 % eximg = imgNormal(eximg, plate_nor_width, plate_nor_height) ;
 
 [pl_img, ~] = extractPlate(img, save_con) ;
-img_t = pl_img{1} ; 
+img_t = pl_img{5} ; 
 merge = getBluePlate(img_t) ;
 merge = imdilate(merge, core) ;
 con_n = bwboundaries(merge,8, 'noholes') ;
