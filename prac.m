@@ -22,13 +22,16 @@ char_wh_upper = 4 ; % 字符长宽比上界
 char_wh_lower = 1 ; % 字符长宽比下界
 plate_area_width_bias = 10 ; % 车牌假设区域长度偏移
 plate_area_height_bias = 10 ; % 车牌假设区域宽度偏移
+img_resize_width = 800 ;
+img_resize_height = 600 ;
 
 %% get image and turn it to hsv space
 %%% 进行一些预处理之后，根据先验知识初步提取出车牌假设区域。
 path = 'F:\opencvjpg\' ;
-file_name = '1018.jpg' ;
+file_name = '1014.jpg' ;
 file_path = [path, file_name] ;
 img = imread(file_path) ;
+% img = imresize(img,[img_resize_height,img_resize_width]) ;
 merge = getBluePlate(img) ;
 % get hsv blue
 core = ones(10,10) ;
@@ -70,6 +73,9 @@ con_n_size = size(con_n) ;
 con_n_size = con_n_size(1,1) ;
 save_n_con = {} ;
 inner = 1 ;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for i = 1:con_n_size
     dy = max(con_n{i}(:,1))-min(con_n{i}(:,1)) ;
     dx = max(con_n{i}(:,2))-min(con_n{i}(:,2)) ;
@@ -79,57 +85,24 @@ for i = 1:con_n_size
     end
 end
 list = save_n_con{1} ;
-
 drow = max(list(:,1))-min(list(:,1)) ;
 dcol = max(list(:,2))-min(list(:,2)) ;
 prop = dcol/drow 
 if prop <= 2.5
-    col_gap = 30 ;
-    row_step = 30 ;
-    delta = [] ;
-    list_new = [list; list(1:row_step,:)] ; % 循环后缀
-    list_len = length(list(:,1)) ;
-    for i = 1:list_len
-        delta(i) = list_new(i+row_step,1)-list_new(i,1) ;
-    end
-    delta_len = length(delta) ;
-    del2 = [] ;
-    for i = 1:delta_len-1
-        del2(i) = delta(i+1)-delta(i) ;
-    end
-    max_delta = max(delta) ;
-    delta_m = abs(delta) >= max_delta-1 ;
-    del2_m = del2 == 0 ;
-    del2_m(length(delta_m)) = 0; 
-    delta_m = [0,delta_m] ;
-    del2_m = [0,del2_m] ;
-    tina = delta_m.*del2_m ;
-    tina_len = length(tina) ;
-    tii = [] ;
-    for i = 1:tina_len-1
-        tii(i) = tina(i+1)-tina(i) ;
-    end
-    % figure
-    % plot(delta)
-    [~,loc1] = find(tii == 1) ;
-    [~,loc2] = find(tii == -1) ;
+    row_step = 35 ;
+    [corner_list,list_new] = getPlateCorner(list,row_step) ;
+
+    [~,loc1] = find(corner_list == 1) ;
+    [~,loc2] = find(corner_list == -1) ;
     figure
     subplot(2,1,1)
     imshow(img_t)
     hold on
     loc_len = length(loc1) ;
-%     for i = 1:loc_len
-%         plot(list_new(loc1(i),2), list_new(loc1(i),1),'r*') ;
-%         plot(list_new(loc2(i)+row_step,2),list_new(loc2(i)+row_step,1),'b*')
-%     end
+    
     subplot(2,1,2)
     imshow(merge)
-%     hold on
-%     loc_len = length(loc1) ;
-%     for i = 1:loc_len
-%         plot(list_new(loc1(i),2), list_new(loc1(i),1),'r*') ;
-%         plot(list_new(loc2(i)+row_step,2),list_new(loc2(i)+row_step,1),'b*')
-%     end
+
     [~,loc_max_row] = max(list(:,1)) ;
     [~,loc_min_row] = min(list(:,1)) ;
     [~,loc_max_col] = max(list(:,2)) ;
@@ -140,24 +113,14 @@ if prop <= 2.5
     min_col = list(loc_min_col,:) ;
     subplot(2,1,1)
     hold on
-%     plot(max_row(:,2),max_row(:,1),'g*')
-%     plot(min_row(:,2),min_row(:,1),'g*')
-%     plot(max_col(:,2),max_col(:,1),'g*')
-%     plot(min_col(:,2),min_col(:,1),'g*')
-%     subplot(2,1,2)
-%     hold on
-%     plot(max_row(:,2),max_row(:,1),'g*')
-%     plot(min_row(:,2),min_row(:,1),'g*')
-%     plot(max_col(:,2),max_col(:,1),'g*')
-%     plot(min_col(:,2),min_col(:,1),'g*')
+
     
     point1 = [min_col(:,2),min_col(:,1)] ;
     point2 = [min_row(:,2),min_row(:,1)] ;
     point3 = [max_row(:,2),max_row(:,1)];
     point4 = [max_col(:,2),max_col(:,1)] ;
-%     area_old = [point2;point4;point1;point3] ;
-    
-    
+
+   
     poss_area = [point1;point2;point3;point4] ; % 列排序优先
     for i = 1:loc_len
         poss_area(i+4,:) = [list_new(loc1(i),2), list_new(loc1(i),1)] ;
@@ -194,33 +157,28 @@ if prop <= 2.5
     for i = 1:length(poss_area(:,1))
         plot(poss_area(i,1),poss_area(i,2),'r*')
     end
-    area_new = [100,100;100+plate_nor_width,100;100,100+plate_nor_height;100+plate_nor_width,100+plate_nor_height] ;
+    area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
     a = 1 ;
 
     Tran = calc_homography(area_old,area_new) ;
     Tran = maketform('projective',Tran);   %投影矩阵
     [imgn, X, Y] = imtransform(img_t,Tran);     %投影
     figure(10)
-    subplot(2,1,1)
+    subplot(3,1,1)
     imshow(img_t)
-    subplot(2,1,2)
+    subplot(3,1,2)
     imshow(imgn) 
-    
-    
+    imgn_g = rgb2gray(imgn) ;
+    subplot(3,1,3)
+    bwimg = im2bw(imgn_g,0.5) ;
+    imshow(bwimg)
+    img_out = deletePlateFrame(bwimg) ;
 else
     [eximg, ~] = extractPlate(img, save_con) ; % extract plate area
     eximg = imgNormal(eximg, plate_nor_width, plate_nor_height) ;
     imgn = eximg{1} ;
 end
-% 
-% figure(10)
-% subplot(3,1,1)
-% stem(delta)
-% subplot(3,1,2)
-% stem(del2)
-% subplot(3,1,3)
-% stem(tii)
-%%% 可以优化，多重求导图的平滑处理
+
 
 
 

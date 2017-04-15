@@ -1,7 +1,7 @@
 clc
 close all
 clear all
-img = imread('F:\opencvjpg\41.jpg') ;
+img = imread('F:\opencvjpg\1023.jpg') ;
 imshow(img)
 p1 = ginput(4) ;
 p2 = [100,100;280,100;100,160;280,160] ;
