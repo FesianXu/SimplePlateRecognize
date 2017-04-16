@@ -1,6 +1,6 @@
 function [charset] = regetChar(plate, char_con)
-pre_charsize = size(char_con) ;
-pre_charsize = pre_charsize(1,2) ;
+%% 删除太小的字符假设区域
+pre_charsize = length(char_con);
 for i =1:pre_charsize
     row_max = max(char_con{i}(:,1)) ;
     row_min = min(char_con{i}(:,1)) ;
@@ -11,7 +11,7 @@ for i =1:pre_charsize
     if dx < 10 && dy < 10
         char_con(i) = [] ;
     end
-end % 删除太小的字符假设区域
+end 
 %% relocalize the center position of char
 dxdy_set = zeros(pre_charsize, 2) ;
 center_set = zeros(pre_charsize, 2) ;

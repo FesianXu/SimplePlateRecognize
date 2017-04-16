@@ -8,6 +8,6 @@ for i = 1:char_list_length
     for j = 1:length(divide_points)
         diff_list(j) = abs(plate_pro_list(i)-divide_points(j)) ;
     end
-    [listmin,index] = min(diff_list) ;
+    [~,index] = min(diff_list) ;
     type_list(i) = index ;
 end

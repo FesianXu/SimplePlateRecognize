@@ -39,9 +39,12 @@ img_resize_height = 600 ;
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
 path = 'F:\opencvjpg\' ;
-file_name = '1105.jpg' ; 
-%%% 1014 1016 1026 big problem, 71 is too gray 1071
-%%% 1043 34 71 multiple test
+file_name = '1097.jpg' ; 
+%%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
+%%% 1043 34 71 multiple test addressed!
+%%% 1080 1120 regetchar failed, the cell have been over 8 list
+%%% 1016 imgNormal failed
+%%% 74 refine failed
 file_path = [path, file_name] ;
 img_color = imread(file_path) ;
 img_color_resize = imresize(img_color,[img_resize_height,img_resize_width]) ;
@@ -76,7 +79,6 @@ if isempty(save_con)
     disp('save con is empty!') ;
     return ;
 end
-
 [pl_img, ~] = extractPlate(img_color_resize, save_con) ;
 pl_norm_img = cell(length(pl_img),1) ;
 for i =1:length(pl_img)
@@ -93,7 +95,7 @@ for i = 1:length(pl_norm_img)
 end
 %%%%
 
-%% 取出多个车牌，再根据
+%% 取出多个车牌假设域，再根据是否能检测出字符而判断是否是真正的车牌
 %%% 
 pl_norm_img_number = 1 ;
 pl_judged_imgset = {} ; % 判断后的车牌域
@@ -125,6 +127,7 @@ while pl_norm_img_number <= length(pl_norm_img)
 
     %% 捕获角点特征矫正车牌
     %%% 矫正车牌
+    %%% TODO 应该根据车牌是否倾斜而自行决定是否采取车牌矫正。
     list = imgt_save_con{1} ;
     [points,left,right] = getPlateCorner(list) ;
     p11 = points(1,:) ;
@@ -141,7 +144,7 @@ while pl_norm_img_number <= length(pl_norm_img)
     Tran = maketform('projective',Tran);   %投影矩阵
     [imgn, X, Y] = imtransform(img_test,Tran);     %投影
 
-    % %% 矫正测试
+    %% 矫正测试
 %     figure(3)
 %     subplot(2,1,1)
 %     imshow(img_test)
@@ -214,8 +217,15 @@ end
 %% re-get chars
 %%% 根据先验知识分割车牌字符
 %%% 需要进一步调整分割的算法
+if isempty(pl_judged_imgset)
+    disp('no license plate in this image!')
+    return ;
+end
+%%% 取第一个车牌进行分割字符
 imgn_out = pl_judged_imgset{1} ;
 chars_con = chars_judged_set{1} ;
+figure
+imshow(imgn_out)
 exchar = regetChar(imgn_out, chars_con) ;
 exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
 % figure
@@ -225,6 +235,7 @@ exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the siz
 % end
 
 %% recognize the chars in plate
+%%% 用的是在极少样本下的模版匹配，当样本多了之后，可以采用特征提取+多分类器的方法
 load test_proj.mat
 relation = [] ;
 charpre_list = {} ;
