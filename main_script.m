@@ -24,8 +24,8 @@ plate_wh_upper = 4 ; % 车牌长宽比例上界
 plate_wh_lower = 1 ; % 车牌长宽比下界
 plate_wh_atlease_width = 30 ; % 车牌至少长度
 plate_wh_atlease_height = 30 ; % 车牌至少宽度
-plate_area_norm_width = 250 ; % 车牌假设域长度
-plate_area_norm_height = 100 ; % 车牌假设域宽度
+plate_area_norm_width = 300 ; % 车牌假设域长度
+plate_area_norm_height = 140 ; % 车牌假设域宽度
 char_wh_upper = 4 ; % 字符长宽比上界
 char_wh_lower = 1 ; % 字符长宽比下界
 plate_area_width_bias = 10 ; % 车牌假设区域长度偏移
@@ -39,7 +39,8 @@ img_resize_height = 600 ;
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
 path = 'F:\opencvjpg\' ;
-file_name = '1014.jpg' ; % 1014 1016
+file_name = '1026.jpg' ; 
+%%% 1014 1016 1026 big problem, 71 is too gray
 file_path = [path, file_name] ;
 img_color = imread(file_path) ;
 img_color_resize = imresize(img_color,[img_resize_height,img_resize_width]) ;
@@ -85,7 +86,7 @@ end %% 标准化车牌假设域
 %%% 取其中一个做测试
 img_test = pl_norm_img{1} ;
 imgt_merge = getBluePlate(img_test) ;
-img_dilate_core = ones(5,5) ;
+img_dilate_core = ones(6,6) ;
 imgt_merge = imdilate(imgt_merge, img_dilate_core) ;
 imgt_con = bwboundaries(imgt_merge,8, 'noholes') ;
 len_imgt_con = length(imgt_con) ;
@@ -123,17 +124,15 @@ Tran = calc_homography(area_old,area_new) ;
 Tran = maketform('projective',Tran);   %投影矩阵
 [imgn, X, Y] = imtransform(img_test,Tran);     %投影
 
-%% 矫正测试
+% %% 矫正测试
 % figure(3)
 % subplot(2,1,1)
 % imshow(img_test)
 % hold on
-% plot(p11(1,1),p11(1,2),'g*')
-% plot(p12(1,1),p12(1,2),'r*')
-% plot(p21(1,1),p21(1,2),'b*')
-% plot(p22(1,1),p22(1,2),'y*')
-% hold on
-% plot(list(1:30,2),list(1:30,1),'y*')
+% % plot(p11(1,1),p11(1,2),'g*')
+% % plot(p12(1,1),p12(1,2),'r*')
+% % plot(p21(1,1),p21(1,2),'b*')
+% % plot(p22(1,1),p22(1,2),'y*')
 % hold on
 % plot(left(:,2),left(:,1),'r*')
 % plot(right(:,2),right(:,1),'b*')
@@ -144,28 +143,80 @@ Tran = maketform('projective',Tran);   %投影矩阵
 
 
 %% 删除车牌边框
+
+imgn_merge = getBluePlate(imgn) ;
+img_dilate_core = ones(5,5) ;
+imgn_merge = imdilate(imgn_merge, img_dilate_core) ;
+imgn_con = bwboundaries(imgn_merge,8, 'noholes') ;
+[imgn_set, ~] = extractPlate(imgn, imgn_con) ;
+imgn = imgn_set{1} ;
+
 imgn_gray = rgb2gray(imgn) ;
-bw_thres = 0.5 ;
+bw_thres = graythresh(imgn_gray) ;
 imgn_bw = im2bw(imgn_gray,bw_thres) ;
 imgn_out = deletePlateFrame(imgn_bw) ;
 erode_core = ones(2,2) ;
 imgn_out = imerode(imgn_out, erode_core) ;
+imgn_out = im2bw(imgn_out,0.6) ;
+figure(10)
 imshow(imgn_out)
 
 %% get chars in plate
 %%% 车牌字符分割
-con = bwboundaries(imgn_out,8, 'noholes') ;
+chars_con = bwboundaries(imgn_out,8, 'noholes') ;
+len_chars_con = length(chars_con) ;
+inner_loop = 1 ;
+save_chars_con = {} ;
+for i = 1:len_chars_con
+    drow = max(chars_con{i}(:,1))-min(chars_con{i}(:,1)) ;
+    dcol = max(chars_con{i}(:,2)-min(chars_con{i}(:,2))) ;
+    if drow/dcol <= char_wh_upper && drow/dcol >= char_wh_lower && dcol > 5 && drow > 10
+        save_chars_con{inner_loop} = chars_con{i} ;
+        inner_loop = inner_loop+1 ;
+    end
+end
 
+% figure(10)
+% hold on
+% for i = 1:length(save_char)
+%     plot(save_char{i}(:,2),save_char{i}(:,1),'r*')
+% end
 
+%% re-get chars
+%%% 根据先验知识分割车牌字符
+%%% 需要进一步调整分割的算法
 
+exchar = regetChar(imgn_out, save_chars_con) ;
+exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
+figure
+for i = 1:7
+    subplot(1,7,i) ;
+    imshow(exchar{i})
+end
 
+%% recognize the chars in plate
+load test_proj.mat
+relation = [] ;
+charpre_list = {} ;
+for i = 2:7
+    proj1 = vertical_projection(exchar{i}) ;
+    proj2 = horizonal_projection(exchar{i}) ;
+    proj = [proj1; proj2]' ;
+    for j = 1:34
+        tmp = corrcoef(proj,test_proj(j,:)) ;
+        relation(j) = tmp(1,2) ;
+    end
+    [~, index] = max(relation) ;
+    charpre_list{i-1} = getCharName(index) ;
+end
 
-
-
-
-
-
-
-
+for i =1:length(exchar)
+    figure(3)
+    subplot(1, length(exchar), i)
+    imshow(exchar{i})
+    if i >= 2
+        title(charpre_list{i-1})
+    end
+end
 
 
