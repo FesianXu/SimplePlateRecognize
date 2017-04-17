@@ -1,4 +1,4 @@
-function [charset] = regetChar(plate, char_con)
+function [charset, refine_charset] = regetChar(plate, char_con)
 least_width = 10;
 least_height = 10 ;
 max_width = 40 ;
@@ -20,24 +20,11 @@ for i =1:pre_charsize
         inner_loop = inner_loop+1 ;
     end
 end 
+
 %% relocalize the center position of char
-len_chars_judged = length(chars_set) ;
-dxdy_set = zeros(len_chars_judged, 2) ;
-center_set = zeros(len_chars_judged, 2) ;
-for i =1:len_chars_judged
-    row_max = max(chars_set{i}(:,1)) ;
-    row_min = min(chars_set{i}(:,1)) ;
-    col_max = max(chars_set{i}(:,2)) ;
-    col_min = min(chars_set{i}(:,2)) ;
-    dxdy_set(i,1) = row_max-row_min ;
-    dxdy_set(i,2) = col_max-col_min ;
-    center_set(i,1) = uint8((row_max+row_min)*0.5) ;
-    center_set(i,2) = uint8((col_max+col_min)*0.5) ;
-end
-row_med = median(dxdy_set(:,1)) ;
-col_med = median(dxdy_set(:,2)) ; % ideal char width and height
-center_row_med = median(center_set(:,1)) ;
-center_set(:,1) = center_row_med ; % ideal center position but not complete
+[loc_cell,len_chars_judged] = relocateChars(chars_set) ;
+center_set = loc_cell{1} ; % 字符中心点
+
 %% get all char according to prior knowledge
 plate_size = size(plate) ;
 plate_width = plate_size(2) ;
@@ -47,6 +34,7 @@ for i = 1:len_chars_judged
     plate_propo(i) = center_set(i, 2)/plate_width ;
 end
 type_list = decideCharType(plate_propo) ; % 知道了每个字符的位置，这个方法不太好，因为是对于车牌的，而不是相对位置的
+
 %% 不管怎么样，但如果有一个字符的多个部分重复的时候，需要重合这部分，防止出现问题
 %%% 合并chars_set和type_list
 chars_set_combined = {} ;
@@ -71,24 +59,12 @@ for i = 1:7
         end
     end
 end
-len_chars_judged = length(chars_set_combined) ;
-dxdy_set = zeros(len_chars_judged, 2) ;
-center_set = zeros(len_chars_judged, 2) ;
-for i =1:len_chars_judged
-    row_max = max(chars_set_combined{i}(:,1)) ;
-    row_min = min(chars_set_combined{i}(:,1)) ;
-    col_max = max(chars_set_combined{i}(:,2)) ;
-    col_min = min(chars_set_combined{i}(:,2)) ;
-    dxdy_set(i,1) = row_max-row_min ;
-    dxdy_set(i,2) = col_max-col_min ;
-    center_set(i,1) = uint8((row_max+row_min)*0.5) ;
-    center_set(i,2) = uint8((col_max+col_min)*0.5) ;
-end
-row_med = median(dxdy_set(:,1)) ;
-col_med = median(dxdy_set(:,2)) ; % ideal char width and height
-center_row_med = median(center_set(:,1)) ;
-center_set(:,1) = center_row_med ; % ideal center position but not complete
 
+[loc_cell,~] = relocateChars(chars_set_combined) ;
+center_set = loc_cell{1} ; % 字符中心点
+row_med = loc_cell{2} ;
+col_med = loc_cell{3} ;
+center_row_med = loc_cell{4} ;
 
 %% get rest chars
 all_type = 1:7 ;
@@ -131,13 +107,18 @@ end
 charset = {} ;
 row_max = uint8(center_row_med+row_med/2) ;
 row_min = uint8(center_row_med-row_med/2) ;
+row_bias = 0 ;
+col_bias = 0 ; % 小心越界,没有加越界保护
 for i =1:7
     col_max = uint16(refine_charset(i,2)+col_med/2) ;
     col_min = uint16(refine_charset(i,2)-col_med/2) ;
     if col_min <= 0
-        continue 
+        col_min = 1 ; 
     end
-    charset{i} = plate(row_min:row_max,col_min:col_max) ;
+%     if col_min == 0
+%         col_min = 1 ;
+%     end
+    charset{i} = plate(row_min-row_bias:row_max+row_bias,col_min-col_bias:col_max+col_bias) ;
 end
 
 

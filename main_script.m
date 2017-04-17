@@ -17,8 +17,8 @@ clear
 close all
 %% parameter initiation
 %%% 一些参数的初始化和设定
-char_nor_width = 16 ;
-char_nor_height = 32 ;
+char_nor_width = 16*2 ;
+char_nor_height = 32*2 ;
 plate_nor_width = 160 ;
 plate_nor_height = 48 ;
 plate_wh_upper = 6 ; % 车牌长宽比例上界
@@ -50,6 +50,7 @@ file_name = '1016.jpg' ;
 %%% 1014 汉字定位问题
 %%% 在车牌分辨率比较低的时候可能会出现一些小问题 49
 %%% a little problem in chars segment in 1110
+%%% 1016 分割效果不是特别好
 file_path = [path, file_name] ;
 img_color = imread(file_path) ;
 img_color_resize = imresize(img_color,[img_resize_height,img_resize_width]) ;
@@ -92,12 +93,12 @@ end %% 标准化车牌假设域
 
 %%
 %%% test part , address multiple plate problem
-figure(20)
-for i = 1:length(pl_norm_img)
-    testimg = pl_norm_img{i} ;
-    subplot(1,length(pl_norm_img),i)
-    imshow(testimg)
-end
+% figure(20)
+% for i = 1:length(pl_norm_img)
+%     testimg = pl_norm_img{i} ;
+%     subplot(1,length(pl_norm_img),i)
+%     imshow(testimg)
+% end
 %%%%
 
 %% 取出多个车牌假设域，再根据是否能检测出字符而判断是否是真正的车牌
@@ -187,8 +188,8 @@ while pl_norm_img_number <= length(pl_norm_img)
     erode_core = ones(2,2) ;
     imgn_out = imerode(imgn_out, erode_core) ;
     imgn_out = im2bw(imgn_out,0.6) ;
-    figure(10)
-    imshow(imgn_out)
+%     figure(10)
+%     imshow(imgn_out)
 
     %% get chars in plate
     %%% 车牌字符分割
@@ -235,15 +236,16 @@ judged_plate_num = 1 ;
 imgn_out = pl_judged_imgset{judged_plate_num} ;
 chars_con = chars_judged_set{judged_plate_num} ;
 
-figure
-imshow(imgn_out)
+% figure
+% imshow(imgn_out)
 
-for i = 1:length(chars_con)
-    hold on
-    plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
-end
-exchar = regetChar(imgn_out, chars_con) ;
+% for i = 1:length(chars_con)
+%     hold on
+%     plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
+% end
+[exchar,center_set] = regetChar(imgn_out, chars_con) ;
 exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
+% plot(center_set(:,2), center_set(:,1), 'b*')
 % figure
 % for i = 1:7
 %     subplot(1,7,i) ;
@@ -252,28 +254,28 @@ exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the siz
 
 %% recognize the chars in plate
 %%% 用的是在极少样本下的模版匹配，当样本多了之后，可以采用特征提取+多分类器的方法
-load test_proj.mat
-relation = [] ;
-charpre_list = {} ;
-for i = 2:7
-    proj1 = vertical_projection(exchar{i}) ;
-    proj2 = horizonal_projection(exchar{i}) ;
-    proj = [proj1; proj2]' ;
-    for j = 1:34
-        tmp = corrcoef(proj,test_proj(j,:)) ;
-        relation(j) = tmp(1,2) ;
-    end
-    [~, index] = max(relation) ;
-    charpre_list{i-1} = getCharName(index) ;
-end
+% load test_proj.mat
+% relation = [] ;
+% charpre_list = {} ;
+% for i = 2:7
+%     proj1 = vertical_projection(exchar{i}) ;
+%     proj2 = horizonal_projection(exchar{i}) ;
+%     proj = [proj1; proj2]' ;
+%     for j = 1:34
+%         tmp = corrcoef(proj,test_proj(j,:)) ;
+%         relation(j) = tmp(1,2) ;
+%     end
+%     [~, index] = max(relation) ;
+%     charpre_list{i-1} = getCharName(index) ;
+% end
 
 for i =1:length(exchar)
     figure(3)
     subplot(1, length(exchar), i)
     imshow(exchar{i})
-    if i >= 2
-        title(charpre_list{i-1})
-    end
+%     if i >= 2
+%         title(charpre_list{i-1})
+%     end
 end
 toc ; % 计时结束
 
