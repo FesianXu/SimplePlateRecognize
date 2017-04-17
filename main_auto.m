@@ -31,6 +31,7 @@ dirimg = dir(path) ;
 invalid = 0 ;
 valid = 0 ;
 warning('off')
+invalid_file_name = {} ;
 for j = 3:173
     fprintf('第%d张图片\r\n',j-2) ;
     file_name = [path,dirimg(j).name] ;
@@ -39,10 +40,12 @@ for j = 3:173
         [plate_cell, plate_type, score] = recognizePlate(img_color) ;
     catch
         invalid = invalid+1 ;
+        invalid_file_name{invalid} = dirimg(j).name ;
         continue ;
     end
     if isempty(plate_cell{1})
         invalid = invalid+1 ;
+        invalid_file_name{invalid} = dirimg(j).name ;
         continue ;
     end
     valid = valid+1 ;
@@ -54,6 +57,9 @@ end
 fprintf('有效图片数%d\r\n',valid) ;
 fprintf('无效图片数%d\r\n',invalid) ;
 fprintf('图片总数%d\r\n',valid+invalid);
-
+save_mat_name = [date,'-',num2str(now),'-invalid_file_name.mat'];
+save_mat_path = 'G:\电子工程\大学电子设计比赛项目\PlateRecognize\test_record\' ;
+save_mat_file_path = [save_mat_path, save_mat_name] ;
+save(save_mat_file_path, 'invalid_file_name')
 
 
