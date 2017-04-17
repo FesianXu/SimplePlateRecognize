@@ -39,12 +39,13 @@ img_resize_height = 600 ;
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
 path = 'F:\opencvjpg\' ;
-file_name = '1097.jpg' ; 
+file_name = '48.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list
 %%% 1016 imgNormal failed
 %%% 74 refine failed
+%%% 在车牌分辨率比较低的时候可能会出现一些小问题 49
 file_path = [path, file_name] ;
 img_color = imread(file_path) ;
 img_color_resize = imresize(img_color,[img_resize_height,img_resize_width]) ;
@@ -113,7 +114,7 @@ while pl_norm_img_number <= length(pl_norm_img)
     for i = 1:len_imgt_con
         drow = max(imgt_con{i}(:,1))-min(imgt_con{i}(:,1)) ;
         dcol = max(imgt_con{i}(:,2))-min(imgt_con{i}(:,2)) ;
-        dcol/drow
+%         dcol/drow
         if dcol/drow < plate_wh_upper && dcol/drow > plate_wh_lower && dcol > 20 && drow > 20
             imgt_save_con{inner_loop} = imgt_con{i} ;
             inner_loop = inner_loop+1 ;
@@ -169,6 +170,10 @@ while pl_norm_img_number <= length(pl_norm_img)
     imgn_merge = imdilate(imgn_merge, img_dilate_core) ;
     imgn_con = bwboundaries(imgn_merge,8, 'noholes') ;
     [imgn_set, ~] = extractPlate(imgn, imgn_con) ;
+    if isempty(imgn_set)
+        disp('imgn_set is empty!')
+        return ;
+    end
     imgn = imgn_set{1} ;
 
     imgn_gray = rgb2gray(imgn) ;
@@ -222,10 +227,15 @@ if isempty(pl_judged_imgset)
     return ;
 end
 %%% 取第一个车牌进行分割字符
-imgn_out = pl_judged_imgset{1} ;
-chars_con = chars_judged_set{1} ;
+judged_plate_num = 1 ;
+imgn_out = pl_judged_imgset{judged_plate_num} ;
+chars_con = chars_judged_set{judged_plate_num} ;
 figure
 imshow(imgn_out)
+% for i = 1:length(chars_con)
+%     hold on
+%     plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
+% end
 exchar = regetChar(imgn_out, chars_con) ;
 exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
 % figure
