@@ -1,4 +1,10 @@
 function [charset] = regetChar(plate, char_con)
+least_width = 10;
+least_height = 10 ;
+max_width = 40 ;
+max_height = 40 ;
+chars_set = {} ;
+inner_loop = 1 ;
 %% 删除太小的字符假设区域
 pre_charsize = length(char_con);
 for i =1:pre_charsize
@@ -6,20 +12,23 @@ for i =1:pre_charsize
     row_min = min(char_con{i}(:,1)) ;
     col_max = max(char_con{i}(:,2)) ;
     col_min = min(char_con{i}(:,2)) ;
-    dx = row_max-row_min ;
-    dy = col_max-col_min ;
-    if dx < 10 && dy < 10
-        char_con(i) = [] ;
+    drow = row_max-row_min ;
+    dcol = col_max-col_min ;
+    if (drow < least_height && dcol < least_width) || drow > 40 || dcol > 40
+    else
+        chars_set{inner_loop} = char_con{i} ;
+        inner_loop = inner_loop+1 ;
     end
 end 
 %% relocalize the center position of char
-dxdy_set = zeros(pre_charsize, 2) ;
-center_set = zeros(pre_charsize, 2) ;
-for i =1:pre_charsize
-    row_max = max(char_con{i}(:,1)) ;
-    row_min = min(char_con{i}(:,1)) ;
-    col_max = max(char_con{i}(:,2)) ;
-    col_min = min(char_con{i}(:,2)) ;
+len_chars_judged = length(chars_set) ;
+dxdy_set = zeros(len_chars_judged, 2) ;
+center_set = zeros(len_chars_judged, 2) ;
+for i =1:len_chars_judged
+    row_max = max(chars_set{i}(:,1)) ;
+    row_min = min(chars_set{i}(:,1)) ;
+    col_max = max(chars_set{i}(:,2)) ;
+    col_min = min(chars_set{i}(:,2)) ;
     dxdy_set(i,1) = row_max-row_min ;
     dxdy_set(i,2) = col_max-col_min ;
     center_set(i,1) = uint8((row_max+row_min)*0.5) ;
@@ -33,8 +42,8 @@ center_set(:,1) = center_row_med ; % ideal center position but not complete
 plate_size = size(plate) ;
 plate_width = plate_size(2) ;
 plate_height = plate_size(1) ;
-plate_propo = zeros(pre_charsize,1) ;
-for i = 1:pre_charsize
+plate_propo = zeros(len_chars_judged,1) ;
+for i = 1:len_chars_judged
     plate_propo(i) = center_set(i, 2)/plate_width ;
 end
 type_list = decideCharType(plate_propo) ; % 知道了每个字符的位置，这个方法不太好，因为是对于车牌的，而不是相对位置的

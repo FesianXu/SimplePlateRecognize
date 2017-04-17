@@ -9,6 +9,7 @@
 % projective transform, and add a method to delete the frame around the
 % plate
 % version1.3: add plate normalization .
+% version1.4: address multiple plate areas in an image
 %%%
 
 clc
@@ -35,17 +36,19 @@ img_resize_height = 600 ;
 %%% 先归一化到一个中等的尺度，并且遍历可能的车牌区域
 %%% 然后在较大尺度中提取出车牌域进行下一步处理。
 
+tic ; % 计时开始
 %% get image and turn it to hsv space
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
 path = 'F:\opencvjpg\' ;
-file_name = '48.jpg' ; 
+file_name = '1120.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list
 %%% 1016 imgNormal failed
 %%% 74 refine failed
 %%% 在车牌分辨率比较低的时候可能会出现一些小问题 49
+%%% a little problem in chars segment in 1110
 file_path = [path, file_name] ;
 img_color = imread(file_path) ;
 img_color_resize = imresize(img_color,[img_resize_height,img_resize_width]) ;
@@ -183,8 +186,8 @@ while pl_norm_img_number <= length(pl_norm_img)
     erode_core = ones(2,2) ;
     imgn_out = imerode(imgn_out, erode_core) ;
     imgn_out = im2bw(imgn_out,0.6) ;
-%     figure(10)
-%     imshow(imgn_out)
+    figure(10)
+    imshow(imgn_out)
 
     %% get chars in plate
     %%% 车牌字符分割
@@ -230,12 +233,14 @@ end
 judged_plate_num = 1 ;
 imgn_out = pl_judged_imgset{judged_plate_num} ;
 chars_con = chars_judged_set{judged_plate_num} ;
-figure
-imshow(imgn_out)
-% for i = 1:length(chars_con)
-%     hold on
-%     plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
-% end
+
+% figure
+% imshow(imgn_out)
+
+for i = 1:length(chars_con)
+    hold on
+    plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
+end
 exchar = regetChar(imgn_out, chars_con) ;
 exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
 % figure
@@ -269,5 +274,5 @@ for i =1:length(exchar)
         title(charpre_list{i-1})
     end
 end
-
+toc ; % 计时结束
 
