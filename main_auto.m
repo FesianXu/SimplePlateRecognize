@@ -28,23 +28,32 @@ save_path = 'F:\opencvjpg\training sets\save_raw\' ;
 
 
 dirimg = dir(path) ;
-for j = 3:179
-fprintf('第%d张图片',j-2) ;
-file_name = [path,dirimg(j).name] 
-img_color = imread(file_name) ;
-try
-    [plate_cell, plate_type, score] = recognizePlate(img_color) ;
-catch
-    continue ;
+invalid = 0 ;
+valid = 0 ;
+warning('off')
+for j = 3:173
+    fprintf('第%d张图片\r\n',j-2) ;
+    file_name = [path,dirimg(j).name] ;
+    img_color = imread(file_name) ;
+    try
+        [plate_cell, plate_type, score] = recognizePlate(img_color) ;
+    catch
+        invalid = invalid+1 ;
+        continue ;
+    end
+    if isempty(plate_cell{1})
+        invalid = invalid+1 ;
+        continue ;
+    end
+    valid = valid+1 ;
+    for i = 1:length(plate_cell)
+        save_name = [save_path, num2str(j-2),'--',num2str(i),'.jpg'];
+        imwrite(plate_cell{i},save_name) ;
+    end
 end
-if isempty(plate_cell{1})
-    continue ;
-end
-for i = 1:length(plate_cell)
-    save_name = [save_path, num2str(j-2),'--',num2str(i),'.jpg'];
-    imwrite(plate_cell{i},save_name) ;
-end
-end
+fprintf('有效图片数%d\r\n',valid) ;
+fprintf('无效图片数%d\r\n',invalid) ;
+fprintf('图片总数%d\r\n',valid+invalid);
 
 
 
