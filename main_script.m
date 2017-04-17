@@ -41,12 +41,13 @@ tic ; % 计时开始
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
 path = 'F:\opencvjpg\' ;
-file_name = '1120.jpg' ; 
+file_name = '1016.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
-%%% 1080 1120 regetchar failed, the cell have been over 8 list
+%%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!
 %%% 1016 imgNormal failed
 %%% 74 refine failed
+%%% 1014 汉字定位问题
 %%% 在车牌分辨率比较低的时候可能会出现一些小问题 49
 %%% a little problem in chars segment in 1110
 file_path = [path, file_name] ;
@@ -234,8 +235,8 @@ judged_plate_num = 1 ;
 imgn_out = pl_judged_imgset{judged_plate_num} ;
 chars_con = chars_judged_set{judged_plate_num} ;
 
-% figure
-% imshow(imgn_out)
+figure
+imshow(imgn_out)
 
 for i = 1:length(chars_con)
     hold on

@@ -5,7 +5,7 @@ max_width = 40 ;
 max_height = 40 ;
 chars_set = {} ;
 inner_loop = 1 ;
-%% 删除太小的字符假设区域
+%% 删除太小和太大的字符假设区域
 pre_charsize = length(char_con);
 for i =1:pre_charsize
     row_max = max(char_con{i}(:,1)) ;
@@ -14,7 +14,7 @@ for i =1:pre_charsize
     col_min = min(char_con{i}(:,2)) ;
     drow = row_max-row_min ;
     dcol = col_max-col_min ;
-    if (drow < least_height && dcol < least_width) || drow > 40 || dcol > 40
+    if (drow < least_height && dcol < least_width) || drow > max_height || dcol > max_width
     else
         chars_set{inner_loop} = char_con{i} ;
         inner_loop = inner_loop+1 ;
@@ -47,7 +47,50 @@ for i = 1:len_chars_judged
     plate_propo(i) = center_set(i, 2)/plate_width ;
 end
 type_list = decideCharType(plate_propo) ; % 知道了每个字符的位置，这个方法不太好，因为是对于车牌的，而不是相对位置的
-%%% get rest chars
+%% 不管怎么样，但如果有一个字符的多个部分重复的时候，需要重合这部分，防止出现问题
+%%% 合并chars_set和type_list
+chars_set_combined = {} ;
+inner_loop = 1 ;
+for i = 1:7
+    loc = find(type_list == i) ;
+    tmpchars = [] ;
+    for j = 1:length(loc)
+        tmpchars = [tmpchars; chars_set{loc(j)}];
+    end
+    if isempty(tmpchars)
+        continue ;
+    end
+    chars_set_combined{inner_loop} = tmpchars ;
+    inner_loop = inner_loop+1 ;
+end
+for i = 1:7
+    loc = find(type_list == i) ;
+    if length(loc) > 1
+        for j = 1:length(loc)-1
+            type_list(loc(j)) = [] ;
+        end
+    end
+end
+len_chars_judged = length(chars_set_combined) ;
+dxdy_set = zeros(len_chars_judged, 2) ;
+center_set = zeros(len_chars_judged, 2) ;
+for i =1:len_chars_judged
+    row_max = max(chars_set_combined{i}(:,1)) ;
+    row_min = min(chars_set_combined{i}(:,1)) ;
+    col_max = max(chars_set_combined{i}(:,2)) ;
+    col_min = min(chars_set_combined{i}(:,2)) ;
+    dxdy_set(i,1) = row_max-row_min ;
+    dxdy_set(i,2) = col_max-col_min ;
+    center_set(i,1) = uint8((row_max+row_min)*0.5) ;
+    center_set(i,2) = uint8((col_max+col_min)*0.5) ;
+end
+row_med = median(dxdy_set(:,1)) ;
+col_med = median(dxdy_set(:,2)) ; % ideal char width and height
+center_row_med = median(center_set(:,1)) ;
+center_set(:,1) = center_row_med ; % ideal center position but not complete
+
+
+%% get rest chars
 all_type = 1:7 ;
 dist = [uint16(0.1795*plate_width), uint16(0.1295*plate_width)];
 diff_type = setdiff(all_type, type_list) ;
@@ -55,7 +98,7 @@ refine_charset = zeros(7,2) ; % 重新矫正之后的字符中心点集合
 refine_charset(:, 1) = center_row_med ;
 for i = 1:length(type_list)
     loc = find(type_list == type_list(i)) ;
-    refine_charset(type_list(i), 2) = center_set(loc,2) ;
+    refine_charset(type_list(i), 2) = center_set(loc(1),2) ;
 end
 for i = 1:length(diff_type)
     min_diff = abs(type_list-diff_type(i)) ;
