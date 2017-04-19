@@ -5,7 +5,7 @@ function [points,left,right] = getPlateCorner(list)
 %%% 有待解决，车牌需要标准化地大一点。
 cosine_threshold_down = -0.7 ;
 cosine_threshold_up = 0.7 ;
-calc_step = 50 ; % 最好是偶数
+calc_step = 60 ; % 最好是偶数
 sample_step = 1 ; % 采样步长
 list_cos = [list;list(1:calc_step,:)] ;
 list_cos = list_cos(1:sample_step:end,:) ;

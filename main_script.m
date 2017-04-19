@@ -41,7 +41,7 @@ tic ; % 计时开始
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
 path = 'F:\opencvjpg\' ;
-file_name = '40.jpg' ; 
+file_name = '1016.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!
@@ -62,6 +62,9 @@ img_merge = imdilate(img_merge, dilate_core) ;
 %%% 进行形态学闭操作，得出初步车牌目标二值图
 img_merge_con = bwboundaries(img_merge,8, 'noholes') ; %% 8-连通域检测
 len_img_merge_con = length(img_merge_con) ;
+
+% figure(100)
+% imshow(img_color)
 
 %% search for plate location may be need to judge if it is really plate,delete some area
 %%% 删除掉一些明显不是车牌假设区域的，此时车牌可能会存在仿射变换或者透视变换，需要进一步
@@ -93,12 +96,12 @@ end %% 标准化车牌假设域
 
 %%
 %%% test part , address multiple plate problem
-% figure(20)
-% for i = 1:length(pl_norm_img)
-%     testimg = pl_norm_img{i} ;
-%     subplot(1,length(pl_norm_img),i)
-%     imshow(testimg)
-% end
+figure(20)
+for i = 1:length(pl_norm_img)
+    testimg = pl_norm_img{i} ;
+    subplot(1,length(pl_norm_img),i)
+    imshow(testimg)
+end
 %%%%
 
 %% 取出多个车牌假设域，再根据是否能检测出字符而判断是否是真正的车牌
@@ -151,21 +154,21 @@ while pl_norm_img_number <= length(pl_norm_img)
     [imgn, X, Y] = imtransform(img_test,Tran);     %投影
 
     %% 矫正测试
-%     figure(3)
-%     subplot(2,1,1)
-%     imshow(img_test)
-%     hold on
-%     plot(p11(1,1),p11(1,2),'g*')
-%     plot(p12(1,1),p12(1,2),'r*')
-%     plot(p21(1,1),p21(1,2),'b*')
-%     plot(p22(1,1),p22(1,2),'y*')
-%     % hold on
-%     plot(left(:,2),left(:,1),'r*')
-%     plot(right(:,2),right(:,1),'b*')
-%     subplot(2,1,2)
-%     imshow(imgn)
-%     figure(4)
-%     imshow(imgt_merge)
+    figure(30)
+    subplot(2,1,1)
+    imshow(img_test)
+    hold on
+    plot(p11(1,1),p11(1,2),'g*')
+    plot(p12(1,1),p12(1,2),'r*')
+    plot(p21(1,1),p21(1,2),'b*')
+    plot(p22(1,1),p22(1,2),'y*')
+    % hold on
+    plot(left(:,2),left(:,1),'r*')
+    plot(right(:,2),right(:,1),'b*')
+    subplot(2,1,2)
+    imshow(imgn)
+    figure(4)
+    imshow(imgt_merge)
 
 
     %% 删除车牌边框
@@ -188,8 +191,8 @@ while pl_norm_img_number <= length(pl_norm_img)
     erode_core = ones(2,2) ;
     imgn_out = imerode(imgn_out, erode_core) ;
     imgn_out = im2bw(imgn_out,0.6) ;
-%     figure(10)
-%     imshow(imgn_out)
+    figure(10)
+    imshow(imgn_out)
 
     %% get chars in plate
     %%% 车牌字符分割

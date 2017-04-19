@@ -1,4 +1,8 @@
 function [charset, refine_charset] = regetChar(plate, char_con)
+%%%%%%
+% charset, 分割出的字符
+% refine_charset, 每个字符的中心点
+%%%%%%
 least_width = 10;
 least_height = 10 ;
 max_width = 40 ;

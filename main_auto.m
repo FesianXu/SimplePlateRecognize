@@ -8,7 +8,8 @@ close all
 %% get a frame of image
 path = 'F:\opencvjpg\' ;
 file_name = '1109.jpg' ; 
-save_path = 'F:\opencvjpg\training sets\save_raw\' ;
+save_path = 'F:\opencvjpg\training sets\save_raw_char\' ;
+save_plate_path = 'F:\opencvjpg\training sets\save_raw_plate\' ;
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!
@@ -32,12 +33,15 @@ invalid = 0 ;
 valid = 0 ;
 warning('off')
 invalid_file_name = {} ;
-for j = 3:173
+for j = 3:length(dirimg)
+    if dirimg(j).isdir == 1
+        continue ;
+    end
     fprintf('µ⁄%d’≈Õº∆¨\r\n',j-2) ;
     file_name = [path,dirimg(j).name] ;
     img_color = imread(file_name) ;
     try
-        [plate_cell, plate_type, score] = recognizePlate(img_color) ;
+        [plate_cell, plate_img, chars_center,plate_type, score] = recognizePlate(img_color) ;
     catch
         invalid = invalid+1 ;
         invalid_file_name{invalid} = dirimg(j).name ;
@@ -48,6 +52,12 @@ for j = 3:173
         invalid_file_name{invalid} = dirimg(j).name ;
         continue ;
     end
+    %%% save plate img into folder
+    save_plate_name = [save_plate_path, num2str(j-2),'---',dirimg(j).name] ;
+%     imwrite(plate_img, save_plate_name) ;
+    imshow(plate_img)
+    hold on
+    plot(chars_center(:,2),chars_center(:,1),'r*')
     valid = valid+1 ;
     for i = 1:length(plate_cell)
         save_name = [save_path, num2str(j-2),'--',num2str(i),'.jpg'];

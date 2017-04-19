@@ -1,10 +1,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Author: FesianXu
 % 将车牌识别封装成一个函数
-% plate_cell 车牌元胞 [plate_img, plate_type, score]
+% plate_cell 车牌元胞,提取出来的车牌图像，需要标准化？
+% plate_img 车牌的原图像
+% chars_center 车牌字符的中心位置
+% plate_type 经过识别之后的字符
+% score 每个字符识别的自信，得分，confidence
 % img_color 原图片
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [plate_cell, plate_type, score] = recognizePlate(img_color)
+function [plate_cell, plate_img,chars_center ,plate_type, score] = recognizePlate(img_color)
 %% parameter initiation
 %%% 一些参数的初始化和设定
 char_nor_width = 16*2 ;
@@ -259,5 +263,9 @@ exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the siz
 for i = 1:length(exchar)
     plate_cell{i} = exchar{i} ;
 end
-
+plate_img = imgn_out ;
+chars_center = center_set ;
 toc ; % 计时结束
+
+
+
