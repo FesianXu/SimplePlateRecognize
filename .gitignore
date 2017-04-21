@@ -1,5 +1,7 @@
 # 忽略所有非m文件和非txt文件
 /*
+!/test_record/
+/test_record/mat_files/
 !*.m
 !*.txt
 /doc/paper/

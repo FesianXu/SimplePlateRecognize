@@ -33,6 +33,7 @@ invalid = 0 ;
 valid = 0 ;
 warning('off')
 invalid_file_name = {} ;
+t_begin = cputime ;
 for j = 3:length(dirimg)
     if dirimg(j).isdir == 1
         continue ;
@@ -54,22 +55,47 @@ for j = 3:length(dirimg)
     end
     %%% save plate img into folder
     save_plate_name = [save_plate_path, num2str(j-2),'---',dirimg(j).name] ;
-%     imwrite(plate_img, save_plate_name) ;
-    imshow(plate_img)
-    hold on
-    plot(chars_center(:,2),chars_center(:,1),'r*')
+    imwrite(plate_img, save_plate_name) ;
+%     imshow(plate_img)
+%     hold on
+%     plot(chars_center(:,2),chars_center(:,1),'r*')
     valid = valid+1 ;
     for i = 1:length(plate_cell)
         save_name = [save_path, num2str(j-2),'--',num2str(i),'.jpg'];
         imwrite(plate_cell{i},save_name) ;
     end
 end
+t_end = cputime ;
 fprintf('有效图片数%d\r\n',valid) ;
 fprintf('无效图片数%d\r\n',invalid) ;
 fprintf('图片总数%d\r\n',valid+invalid);
 save_mat_name = [date,'-',num2str(now),'-invalid_file_name.mat'];
-save_mat_path = 'G:\电子工程\大学电子设计比赛项目\PlateRecognize\test_record\' ;
+save_mat_path = '.\test_record\mat_files\' ;
 save_mat_file_path = [save_mat_path, save_mat_name] ;
 save(save_mat_file_path, 'invalid_file_name')
+%%% save record mat files
+save_txt_path = '.\test_record\txt_files\' ;
+save_txt_name = [date,'-',num2str(now),'-invalid_file_name.txt'] ;
+save_txt_file_path = [save_txt_path, save_txt_name] ;
+fid = fopen(save_txt_file_path, 'wt') ;
+len_invalid = length(invalid_file_name) ;
+fprintf(fid,'%s\r\n',date) ;
+fprintf(fid,'图片文件夹:%s\r\n',path) ;
+fprintf(fid,'\r---------------------------------------------\r') ;
+fprintf(fid,'无效图片列表:\r\n') ;
+for i = 1:len_invalid
+    fprintf(fid,'%s\r',invalid_file_name{i}) ;
+end
+fprintf(fid,'\r\n---------------------------------------------\r\n') ;
+fprintf(fid,'有效图片数%d\r\n',valid) ;
+fprintf(fid,'无效图片数%d\r\n',invalid) ;
+fprintf(fid,'图片总数%d\r\n',valid+invalid);
+fprintf(fid,'有效比%.2f\r\n',valid/(valid+invalid));
+fprintf(fid,'所用时间%f秒\r\n',t_end-t_begin) ;
+fclose(fid) ;
+%%% save record in txt files 
+
+
+
 
 
