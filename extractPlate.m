@@ -1,6 +1,6 @@
 function [eximg, num] = extractPlate(img, con_cell)
 con_size = length(con_cell) ;
-eximg = cell(con_size, 1) ;
+eximg = {} ;
 bias = 0 ;
 inner_loop = 1 ;
 least_length = 100 ;

@@ -3,7 +3,7 @@
 % 全自动提取图片，调用recognizePlate库函数（自己编写）
 %%%%
 clc
-clear all
+clear
 close all
 %% get a frame of image
 path = 'F:\opencvjpg\' ;

@@ -27,8 +27,8 @@ plate_wh_atlease_width = 30 ; % 车牌至少长度
 plate_wh_atlease_height = 30 ; % 车牌至少宽度
 plate_area_norm_width = 300 ; % 车牌假设域长度
 plate_area_norm_height = 140 ; % 车牌假设域宽度
-char_wh_upper = 5 ; % 字符长宽比上界
-char_wh_lower = 1 ; % 字符长宽比下界
+char_wh_upper = 3.5 ; % 字符长宽比上界
+char_wh_lower = 1.5 ; % 字符长宽比下界
 plate_area_width_bias = 10 ; % 车牌假设区域长度偏移
 plate_area_height_bias = 10 ; % 车牌假设区域宽度偏移
 img_resize_width = 800 ;
@@ -41,7 +41,7 @@ tic ; % 计时开始
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
 path = 'F:\opencvjpg\' ;
-file_name = '41.jpg' ; 
+file_name = '49.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!
@@ -55,16 +55,15 @@ file_path = [path, file_name] ;
 img_color = imread(file_path) ;
 img_color_resize = imresize(img_color,[img_resize_height,img_resize_width]) ;
 img_merge = getBluePlate(img_color_resize) ; %%% get blue area and mask blue area with pixel 1
-erode_core = ones(2,2) ;
+figure(100)
+imshow(img_merge)
+erode_core = ones(1,1) ;
 img_merge = imerode(img_merge, erode_core) ;
-dilate_core = ones(10,10) ;
+dilate_core = ones(10,15) ;
 img_merge = imdilate(img_merge, dilate_core) ;
 %%% 进行形态学闭操作，得出初步车牌目标二值图
 img_merge_con = bwboundaries(img_merge,8, 'noholes') ; %% 8-连通域检测
 len_img_merge_con = length(img_merge_con) ;
-
-% figure(100)
-% imshow(img_color)
 
 %% search for plate location may be need to judge if it is really plate,delete some area
 %%% 删除掉一些明显不是车牌假设区域的，此时车牌可能会存在仿射变换或者透视变换，需要进一步
@@ -94,15 +93,28 @@ for i =1:length(pl_img)
     pl_norm_img{i} = imresize(pl_img{i}, [plate_area_norm_height, plate_area_norm_width]) ;
 end %% 标准化车牌假设域
 
-%%
-%%% test part , address multiple plate problem
-figure(20)
+%% 通过排除面积太小的区域，减少车牌错误假设域
+total = zeros(length(pl_norm_img),1) ;
 for i = 1:length(pl_norm_img)
-    testimg = pl_norm_img{i} ;
-    subplot(1,length(pl_norm_img),i)
-    imshow(testimg)
+    merimg = getBluePlate(pl_norm_img{i}) ;
+    total(i) = bwarea(merimg) ;
 end
-%%%%
+max_total = max(total) ;
+pl_img_tmp = {} ;
+inner_loop = 1 ;
+for i = 1:length(total)
+    if total(i) >= max_total*0.7
+        pl_img_tmp(inner_loop) = pl_norm_img(i) ;
+        inner_loop = inner_loop+1 ;
+    end
+end
+pl_norm_img = pl_img_tmp ;
+
+figure(36)
+for i = 1:length(pl_norm_img)
+    subplot(1,length(pl_norm_img),i)
+    imshow(pl_norm_img{i})
+end
 
 %% 取出多个车牌假设域，再根据是否能检测出字符而判断是否是真正的车牌
 %%% 
@@ -133,48 +145,64 @@ while pl_norm_img_number <= length(pl_norm_img)
         disp('imgt save con is empty');
         return ;
     end
-
-    %% 捕获角点特征矫正车牌
-    %%% 矫正车牌
-    %%% TODO 应该根据车牌是否倾斜而自行决定是否采取车牌矫正。
-    list = imgt_save_con{1} ;
-    [points,left,right] = getPlateCorner(list) ;
-    p11 = points(1,:) ;
-    p12 = points(2,:) ;
-    p21 = points(3,:) ;
-    p22 = points(4,:) ;
-    p11 = p11(end:-1:1) ;
-    p12 = p12(end:-1:1) ;
-    p21 = p21(end:-1:1) ;
-    p22 = p22(end:-1:1) ;
-    area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
-    area_old = [p11;p12;p21;p22] ;
-    Tran = calc_homography(area_old,area_new) ;
-    Tran = maketform('projective',Tran);   %投影矩阵
-    [imgn, X, Y] = imtransform(img_test,Tran);     %投影
-
+    
+    %% radon变换判断是否需要矫正车牌
+    Icanny = edge(imgt_merge,'canny') ;
+    theta = 1:180;
+    [R,xp] = radon(Icanny,theta);
+    [~,J] = find(R >= max(max(R)));
+    slant_angle = 90-J 
+    if abs(slant_angle) <= 3
+        %%% 不需要矫正
+        imgn = img_test ;
+    else
+       %% 捕获角点特征矫正车牌
+        %%% 矫正车牌
+        %%% TODO 应该根据车牌是否倾斜而自行决定是否采取车牌矫正。
+        list_len = zeros(length(imgt_save_con),1) ;
+        for i = 1:length(imgt_save_con)
+            list_len(i) = length(imgt_save_con{i});
+        end
+        [~, idx_list] = max(list_len) ;
+        list = imgt_save_con{idx_list} ;
+        [points,left,right] = getPlateCorner(list) ;
+        p11 = points(1,:) ;
+        p12 = points(2,:) ;
+        p21 = points(3,:) ;
+        p22 = points(4,:) ;
+        p11 = p11(end:-1:1) ;
+        p12 = p12(end:-1:1) ;
+        p21 = p21(end:-1:1) ;
+        p22 = p22(end:-1:1) ;
+        area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
+        area_old = [p11;p12;p21;p22] ;
+        Tran = calc_homography(area_old,area_new) ;
+        Tran = maketform('projective',Tran);   %投影矩阵
+        [imgn, X, Y] = imtransform(img_test,Tran);     %投影
+    end
+    
     %% 矫正测试
-    figure(30)
-    subplot(2,1,1)
-    imshow(img_test)
-    hold on
-    plot(p11(1,1),p11(1,2),'g*')
-    plot(p12(1,1),p12(1,2),'r*')
-    plot(p21(1,1),p21(1,2),'b*')
-    plot(p22(1,1),p22(1,2),'y*')
-    % hold on
-    plot(left(:,2),left(:,1),'r*')
-    plot(right(:,2),right(:,1),'b*')
-    subplot(2,1,2)
-    imshow(imgn)
-    figure(4)
-    imshow(imgt_merge)
+%     figure(30)
+%     subplot(2,1,1)
+%     imshow(img_test)
+%     hold on
+%     plot(p11(1,1),p11(1,2),'g*')
+%     plot(p12(1,1),p12(1,2),'r*')
+%     plot(p21(1,1),p21(1,2),'b*')
+%     plot(p22(1,1),p22(1,2),'y*')
+%     % hold on
+%     plot(left(:,2),left(:,1),'r*')
+%     plot(right(:,2),right(:,1),'b*')
+%     subplot(2,1,2)
+%     imshow(imgn)
+%     figure(4)
+%     imshow(imgt_merge)
 
 
     %% 删除车牌边框
 
     imgn_merge = getBluePlate(imgn) ;
-    img_dilate_core = ones(5,5) ;
+    img_dilate_core = ones(15,15) ;
     imgn_merge = imdilate(imgn_merge, img_dilate_core) ;
     imgn_con = bwboundaries(imgn_merge,8, 'noholes') ;
     [imgn_set, ~] = extractPlate(imgn, imgn_con) ;
@@ -183,6 +211,13 @@ while pl_norm_img_number <= length(pl_norm_img)
         return ;
     end
     imgn = imgn_set{1} ;
+    figure(32)
+    for i = 1:length(imgn_set)
+        subplot(1,length(imgn_set),i)
+        imshow(imgn_set{i})
+    end
+    
+    %% 除去车牌区域中的过小的点集
 
     imgn_gray = rgb2gray(imgn) ;
     bw_thres = graythresh(imgn_gray) ;
@@ -234,6 +269,11 @@ if isempty(pl_judged_imgset)
     disp('no license plate in this image!')
     return ;
 end
+% figure(65)
+% for i = 1:length(pl_judged_imgset)
+%     subplot(1,2,i)
+%     imshow(pl_judged_imgset{i})
+% end
 %%% 取第一个车牌进行分割字符
 judged_plate_num = 1 ;
 imgn_out = pl_judged_imgset{judged_plate_num} ;
@@ -242,10 +282,10 @@ chars_con = chars_judged_set{judged_plate_num} ;
 % figure
 % imshow(imgn_out)
 
-% for i = 1:length(chars_con)
-%     hold on
-%     plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
-% end
+for i = 1:length(chars_con)
+    hold on
+    plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
+end
 [exchar,center_set] = regetChar(imgn_out, chars_con) ;
 exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
 % plot(center_set(:,2), center_set(:,1), 'b*')
