@@ -4,6 +4,7 @@
 % plate_cell 车牌元胞,提取出来的车牌图像，需要标准化？
 % plate_img 车牌的原图像
 % chars_center 车牌字符的中心位置
+% correct_type 矫正类型数量
 % plate_type 经过识别之后的字符
 % score 每个字符识别的自信，得分，confidence
 % img_color 原图片
@@ -23,7 +24,7 @@
 % version1.5: radon transform first to judge whether the plate is slanted
 % or not so that judge whether should correct the plate.
 %%%
-function [plate_cell, plate_img,chars_center ,plate_type, score] = recognizePlate(img_color)
+function [plate_cell, plate_img,chars_center ,correct_type, plate_type, score] = recognizePlate(img_color)
 %% parameter initiation
 %%% 一些参数的初始化和设定
 char_nor_width = 16*2 ;
@@ -43,10 +44,11 @@ plate_area_height_bias = 10 ; % 车牌假设区域宽度偏移
 img_resize_width = 800 ;
 img_resize_height = 600 ;
 remove_error_plate_ratio = 0.7 ; % 减少错误车牌假设域
-slant_threshold = -3 ; % 超过某个车牌倾斜阀值就需要矫正了
+slant_threshold = 3 ; % 超过某个车牌倾斜阀值就需要矫正了
 %%% output parameters
 plate_cell = cell(7,1) ;
 plate_type = zeros(7,1) ;
+correct_type = 0 ;
 score = zeros(7,1) ;
 %%% 先归一化到一个中等的尺度，并且遍历可能的车牌区域
 %%% 然后在较大尺度中提取出车牌域进行下一步处理。
@@ -58,7 +60,7 @@ img_color_resize = imresize(img_color,[img_resize_height,img_resize_width]) ;
 img_merge = getBluePlate(img_color_resize) ; %%% get blue area and mask blue area with pixel 1
 erode_core = ones(1,1) ;
 img_merge = imerode(img_merge, erode_core) ;
-dilate_core = ones(10,15) ;
+dilate_core = ones(10,20) ;
 img_merge = imdilate(img_merge, dilate_core) ;
 %%% 进行形态学闭操作，得出初步车牌目标二值图
 img_merge_con = bwboundaries(img_merge,8, 'noholes') ; %% 8-连通域检测
@@ -128,7 +130,7 @@ pl_num_loop = 1 ;
 while pl_norm_img_number <= length(pl_norm_img)
     img_test = pl_norm_img{pl_norm_img_number} ;
     imgt_merge = getBluePlate(img_test) ;
-    img_dilate_core = ones(20,20) ;
+    img_dilate_core = ones(15,15) ;
     imgt_merge = imdilate(imgt_merge, img_dilate_core) ;
     imgt_con = bwboundaries(imgt_merge,8, 'noholes') ;
     len_imgt_con = length(imgt_con) ;
@@ -158,6 +160,7 @@ while pl_norm_img_number <= length(pl_norm_img)
     if abs(slant_angle) <= slant_threshold
         %%% 不需要矫正 需要标准化
         imgn = imresize(img_test,[plate_nor_height,plate_nor_width]) ;
+        correct_type = 1 ;
     else
         %% 捕获角点特征矫正车牌
         %%% 矫正车牌
@@ -173,15 +176,28 @@ while pl_norm_img_number <= length(pl_norm_img)
         p12 = points(2,:) ;
         p21 = points(3,:) ;
         p22 = points(4,:) ;
-        p11 = p11(end:-1:1) ;
-        p12 = p12(end:-1:1) ;
-        p21 = p21(end:-1:1) ;
-        p22 = p22(end:-1:1) ;
-        area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
-        area_old = [p11;p12;p21;p22] ;
-        Tran = calc_homography(area_old,area_new) ;
-        Tran = maketform('projective',Tran);   %投影矩阵
-        [imgn, X, Y] = imtransform(img_test,Tran);     %投影
+        v1 = p11-p21 ;
+        v2 = p12-p22 ;
+        v3 = p12-p11 ;
+        v4 = p22-p21 ;
+        para1 = v1*v2'/(norm(v1,2)*norm(v2,2)) ;
+        para2 = v3*v4'/(norm(v3,2)*norm(v4,2)) ;
+        if para1 > 0.99 && para2 > 0.99 && 0
+            imgn = imrotate(img_test,slant_angle,'bilinear','crop') ;
+            correct_type = 2 ;
+            %%% 实验效果不佳
+        else
+            p11 = p11(end:-1:1) ;
+            p12 = p12(end:-1:1) ;
+            p21 = p21(end:-1:1) ;
+            p22 = p22(end:-1:1) ;
+            area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
+            area_old = [p11;p12;p21;p22] ;
+            Tran = calc_homography(area_old,area_new) ;
+            Tran = maketform('projective',Tran);   %投影矩阵
+            [imgn, X, Y] = imtransform(img_test,Tran);     %投影
+            correct_type = 3 ;
+        end
     end
 
     %% 删除车牌边框
@@ -264,8 +280,10 @@ chars_con = chars_judged_set{judged_plate_num} ;
 %     hold on
 %     plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
 % end
-[exchar,center_set] = regetChar(imgn_out, chars_con) ;
-exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
+
+% [exchar,center_set] = regetChar(imgn_out, chars_con) ;
+% exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
+
 % plot(center_set(:,2), center_set(:,1), 'b*')
 % figure
 % for i = 1:7
@@ -274,6 +292,8 @@ exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the siz
 % end
 
 %% recognize the chars in plate
+exchar = {} ;
+center_set = {} ;
 
 for i = 1:length(exchar)
     plate_cell{i} = exchar{i} ;

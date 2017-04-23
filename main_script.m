@@ -40,8 +40,8 @@ tic ; % 计时开始
 %% get image and turn it to hsv space
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
-path = 'F:\opencvjpg\' ;
-file_name = '49.jpg' ; 
+path = 'F:\opencvjpg\test_img\' ;
+file_name = '18.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!
@@ -55,11 +55,9 @@ file_path = [path, file_name] ;
 img_color = imread(file_path) ;
 img_color_resize = imresize(img_color,[img_resize_height,img_resize_width]) ;
 img_merge = getBluePlate(img_color_resize) ; %%% get blue area and mask blue area with pixel 1
-figure(100)
-imshow(img_merge)
 erode_core = ones(1,1) ;
 img_merge = imerode(img_merge, erode_core) ;
-dilate_core = ones(10,15) ;
+dilate_core = ones(10,10) ;
 img_merge = imdilate(img_merge, dilate_core) ;
 %%% 进行形态学闭操作，得出初步车牌目标二值图
 img_merge_con = bwboundaries(img_merge,8, 'noholes') ; %% 8-连通域检测
@@ -154,11 +152,13 @@ while pl_norm_img_number <= length(pl_norm_img)
     slant_angle = 90-J 
     if abs(slant_angle) <= 3
         %%% 不需要矫正
-        imgn = img_test ;
+        imgn = imresize(img_test,[plate_nor_height,plate_nor_width]) ;
     else
        %% 捕获角点特征矫正车牌
         %%% 矫正车牌
         %%% TODO 应该根据车牌是否倾斜而自行决定是否采取车牌矫正。
+        %%% 对于需要矫正的车牌，应该判断其倾斜类型，如果是仿射变形或者是类仿射变形可以采用简单旋转
+        %%% 对于严重的透视变形，则需要采用透视变换解决(存在一定风险，所以尽量用前者)，通过平行性来决定其变形类型。
         list_len = zeros(length(imgt_save_con),1) ;
         for i = 1:length(imgt_save_con)
             list_len(i) = length(imgt_save_con{i});
@@ -170,15 +170,26 @@ while pl_norm_img_number <= length(pl_norm_img)
         p12 = points(2,:) ;
         p21 = points(3,:) ;
         p22 = points(4,:) ;
-        p11 = p11(end:-1:1) ;
-        p12 = p12(end:-1:1) ;
-        p21 = p21(end:-1:1) ;
-        p22 = p22(end:-1:1) ;
-        area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
-        area_old = [p11;p12;p21;p22] ;
-        Tran = calc_homography(area_old,area_new) ;
-        Tran = maketform('projective',Tran);   %投影矩阵
-        [imgn, X, Y] = imtransform(img_test,Tran);     %投影
+        v1 = p11-p21 ;
+        v2 = p12-p22 ;
+        v3 = p12-p11 ;
+        v4 = p22-p21 ;
+        para1 = v1*v2'/(norm(v1,2)*norm(v2,2)) ;
+        para2 = v3*v4'/(norm(v3,2)*norm(v4,2)) ;
+        if para1 > 0.99 && para2 > 0.99 && 0
+            imgn = imrotate(img_test,slant_angle,'bilinear','crop') ;
+            %%% 效果不好，暂时放弃
+        else
+            p11 = p11(end:-1:1) ;
+            p12 = p12(end:-1:1) ;
+            p21 = p21(end:-1:1) ;
+            p22 = p22(end:-1:1) ;
+            area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
+            area_old = [p11;p12;p21;p22] ;
+            Tran = calc_homography(area_old,area_new) ;
+            Tran = maketform('projective',Tran);   %投影矩阵
+            [imgn, X, Y] = imtransform(img_test,Tran);     %投影
+        end
     end
     
     %% 矫正测试
