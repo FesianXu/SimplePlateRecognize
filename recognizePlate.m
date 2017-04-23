@@ -23,6 +23,8 @@
 % version1.4: address multiple plate areas in an image
 % version1.5: radon transform first to judge whether the plate is slanted
 % or not so that judge whether should correct the plate.
+% version1.6: add svm to judge whether the plate area is a real plate or
+% not
 %%%
 function [plate_cell, plate_img,chars_center ,correct_type, plate_type, score] = recognizePlate(img_color)
 %% parameter initiation
@@ -52,6 +54,9 @@ correct_type = 0 ;
 score = zeros(7,1) ;
 %%% 先归一化到一个中等的尺度，并且遍历可能的车牌区域
 %%% 然后在较大尺度中提取出车牌域进行下一步处理。
+model_name = '.\train_data\isplate_svm.mat' ;
+model = load(model_name);
+svm_model = model.svm_model ;
 tic ; % 计时开始
 %% get image and turn it to hsv space
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
@@ -130,7 +135,7 @@ pl_num_loop = 1 ;
 while pl_norm_img_number <= length(pl_norm_img)
     img_test = pl_norm_img{pl_norm_img_number} ;
     imgt_merge = getBluePlate(img_test) ;
-    img_dilate_core = ones(15,15) ;
+    img_dilate_core = ones(10,20) ;
     imgt_merge = imdilate(imgt_merge, img_dilate_core) ;
     imgt_con = bwboundaries(imgt_merge,8, 'noholes') ;
     len_imgt_con = length(imgt_con) ;
@@ -139,7 +144,6 @@ while pl_norm_img_number <= length(pl_norm_img)
     for i = 1:len_imgt_con
         drow = max(imgt_con{i}(:,1))-min(imgt_con{i}(:,1)) ;
         dcol = max(imgt_con{i}(:,2))-min(imgt_con{i}(:,2)) ;
-%         dcol/drow
         if dcol/drow < plate_wh_upper && dcol/drow > plate_wh_lower && dcol > plate_wh_atlease_width && drow > plate_wh_atlease_height
             imgt_save_con{inner_loop} = imgt_con{i} ;
             inner_loop = inner_loop+1 ;
@@ -225,37 +229,17 @@ while pl_norm_img_number <= length(pl_norm_img)
     erode_core = ones(2,2) ;
     imgn_out = imerode(imgn_out, erode_core) ;
     imgn_out = im2bw(imgn_out,0.6) ;
-%     figure(10)
-%     imshow(imgn_out)
 
-    %% get chars in plate
-    %%% 车牌字符分割
-    chars_con = bwboundaries(imgn_out,8, 'noholes') ;
-    len_chars_con = length(chars_con) ;
-    inner_loop = 1 ;
-    save_chars_con = {} ;
-    for i = 1:len_chars_con
-        drow = max(chars_con{i}(:,1))-min(chars_con{i}(:,1)) ;
-        dcol = max(chars_con{i}(:,2)-min(chars_con{i}(:,2))) ;
-        if drow/dcol <= char_wh_upper && drow/dcol >= char_wh_lower && dcol > 5 && drow > 10
-            save_chars_con{inner_loop} = chars_con{i} ;
-            inner_loop = inner_loop+1 ;
-        end
-    end
-
-%     figure(10)
-%     hold on
-%     for i = 1:length(save_chars_con)
-%         plot(save_chars_con{i}(:,2),save_chars_con{i}(:,1),'r*')
-%     end
-
-    if isempty(save_chars_con)
+    %% 判断是否是车牌
+    imgn_out = imresize(imgn_out, [plate_nor_height, plate_nor_width]) ;
+    imvec = double(reshape(imgn_out,1,plate_nor_height*plate_nor_width)) ;
+    [label, score] = predict(svm_model, imvec) ;
+    if label == -1
         pl_norm_img_number = pl_norm_img_number+1 ;
         %%% 该车牌假设域没有检测到车牌字符，因此换下一个车牌假设域
     else
         %%% 车牌假设域内有车牌，保存其归一化车牌和车牌字符链表
         pl_judged_imgset{pl_num_loop} = imgn_out ;
-        chars_judged_set{pl_num_loop} = save_chars_con ;
         pl_num_loop = pl_num_loop+1 ;
         pl_norm_img_number = pl_norm_img_number+1 ;
     end
@@ -270,26 +254,12 @@ if isempty(pl_judged_imgset)
 end
 %%% 取第一个车牌进行分割字符
 judged_plate_num = 1 ;
-imgn_out = pl_judged_imgset{judged_plate_num} ;
-chars_con = chars_judged_set{judged_plate_num} ;
+imgn = pl_judged_imgset{judged_plate_num} ;
+plate_img = imgn ;
 
-% figure
-% imshow(imgn_out)
-% 
-% for i = 1:length(chars_con)
-%     hold on
-%     plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
-% end
 
 % [exchar,center_set] = regetChar(imgn_out, chars_con) ;
 % exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
-
-% plot(center_set(:,2), center_set(:,1), 'b*')
-% figure
-% for i = 1:7
-%     subplot(1,7,i) ;
-%     imshow(exchar{i})
-% end
 
 %% recognize the chars in plate
 exchar = {} ;
@@ -298,7 +268,6 @@ center_set = {} ;
 for i = 1:length(exchar)
     plate_cell{i} = exchar{i} ;
 end
-plate_img = imgn_out ;
 chars_center = center_set ;
 toc ; % 计时结束
 

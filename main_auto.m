@@ -6,7 +6,7 @@ clc
 clear
 close all
 %% get a frame of image
-path = 'F:\opencvjpg\test_img\' ;
+path = 'F:\opencvjpg\' ;
 file_name = '1109.jpg' ; 
 save_path = 'F:\opencvjpg\training sets\save_raw_char\' ;
 save_plate_path = 'F:\opencvjpg\training sets\save_raw_plate\' ;

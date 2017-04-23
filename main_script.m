@@ -35,13 +35,16 @@ img_resize_width = 800 ;
 img_resize_height = 600 ;
 %%% 先归一化到一个中等的尺度，并且遍历可能的车牌区域
 %%% 然后在较大尺度中提取出车牌域进行下一步处理。
+model_name = '.\train_data\isplate_svm.mat' ;
+model = load(model_name);
+svm_model = model.svm_model ;
 
 tic ; % 计时开始
 %% get image and turn it to hsv space
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
-path = 'F:\opencvjpg\test_img\' ;
-file_name = '18.jpg' ; 
+path = 'F:\opencvjpg\' ;
+file_name = '1020.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!
@@ -210,7 +213,7 @@ while pl_norm_img_number <= length(pl_norm_img)
 %     imshow(imgt_merge)
 
 
-    %% 删除车牌边框
+    %% 重新得到更为细致的车牌区间，避免自适应二值化被影响。
 
     imgn_merge = getBluePlate(imgn) ;
     img_dilate_core = ones(15,15) ;
@@ -228,7 +231,7 @@ while pl_norm_img_number <= length(pl_norm_img)
         imshow(imgn_set{i})
     end
     
-    %% 除去车牌区域中的过小的点集
+    %% 删除车牌边框
 
     imgn_gray = rgb2gray(imgn) ;
     bw_thres = graythresh(imgn_gray) ;
@@ -239,35 +242,23 @@ while pl_norm_img_number <= length(pl_norm_img)
     imgn_out = im2bw(imgn_out,0.6) ;
     figure(10)
     imshow(imgn_out)
+    imgn_out = imresize(imgn_out, [plate_nor_height, plate_nor_width]) ;
 
-    %% get chars in plate
-    %%% 车牌字符分割
-    chars_con = bwboundaries(imgn_out,8, 'noholes') ;
-    len_chars_con = length(chars_con) ;
-    inner_loop = 1 ;
-    save_chars_con = {} ;
-    for i = 1:len_chars_con
-        drow = max(chars_con{i}(:,1))-min(chars_con{i}(:,1)) ;
-        dcol = max(chars_con{i}(:,2)-min(chars_con{i}(:,2))) ;
-        if drow/dcol <= char_wh_upper && drow/dcol >= char_wh_lower && dcol > 5 && drow > 10
-            save_chars_con{inner_loop} = chars_con{i} ;
-            inner_loop = inner_loop+1 ;
-        end
-    end
-
+    %% 判断是否是车牌
+    imvec = double(reshape(imgn_out,1,plate_nor_height*plate_nor_width)) ;
+    [label, score] = predict(svm_model, imvec) ;
 %     figure(10)
 %     hold on
 %     for i = 1:length(save_chars_con)
 %         plot(save_chars_con{i}(:,2),save_chars_con{i}(:,1),'r*')
 %     end
 
-    if isempty(save_chars_con)
+    if label == -1
         pl_norm_img_number = pl_norm_img_number+1 ;
         %%% 该车牌假设域没有检测到车牌字符，因此换下一个车牌假设域
     else
         %%% 车牌假设域内有车牌，保存其归一化车牌和车牌字符链表
         pl_judged_imgset{pl_num_loop} = imgn_out ;
-        chars_judged_set{pl_num_loop} = save_chars_con ;
         pl_num_loop = pl_num_loop+1 ;
         pl_norm_img_number = pl_norm_img_number+1 ;
     end
@@ -288,17 +279,17 @@ end
 %%% 取第一个车牌进行分割字符
 judged_plate_num = 1 ;
 imgn_out = pl_judged_imgset{judged_plate_num} ;
-chars_con = chars_judged_set{judged_plate_num} ;
 
+imgn_out = imresize(imgn_out,[plate_nor_height, plate_nor_width]) ;
 % figure
 % imshow(imgn_out)
 
-for i = 1:length(chars_con)
-    hold on
-    plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
-end
-[exchar,center_set] = regetChar(imgn_out, chars_con) ;
-exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
+% for i = 1:length(chars_con)
+%     hold on
+%     plot(chars_con{i}(:,2),chars_con{i}(:,1),'r*')
+% end
+% [exchar,center_set] = regetChar(imgn_out, chars_con) ;
+% exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
 % plot(center_set(:,2), center_set(:,1), 'b*')
 % figure
 % for i = 1:7
@@ -323,13 +314,13 @@ exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the siz
 %     charpre_list{i-1} = getCharName(index) ;
 % end
 
-for i =1:length(exchar)
-    figure(3)
-    subplot(1, length(exchar), i)
-    imshow(exchar{i})
-%     if i >= 2
-%         title(charpre_list{i-1})
-%     end
-end
+% for i =1:length(exchar)
+%     figure(3)
+%     subplot(1, length(exchar), i)
+%     imshow(exchar{i})
+% %     if i >= 2
+% %         title(charpre_list{i-1})
+% %     end
+% end
 toc ; % 计时结束
 
