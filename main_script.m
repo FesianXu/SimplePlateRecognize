@@ -43,8 +43,8 @@ tic ; % 计时开始
 %% get image and turn it to hsv space
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
-path = 'F:\opencvjpg\' ;
-file_name = '1020.jpg' ; 
+path = 'F:\opencvjpg\test_img\' ;
+file_name = '79.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!
@@ -116,6 +116,58 @@ for i = 1:length(pl_norm_img)
     subplot(1,length(pl_norm_img),i)
     imshow(pl_norm_img{i})
 end
+%% test
+% figure(232)
+% img_test = pl_norm_img{1} ;
+% imgt_merge = getBluePlate(img_test) ;
+% img_dilate_core = ones(10,20) ;
+% imgt_merge = imdilate(imgt_merge, img_dilate_core) ;
+%     imgt_con = bwboundaries(imgt_merge,8, 'noholes') ;
+%     len_imgt_con = length(imgt_con) ;
+%     inner_loop = 1 ;
+%     imgt_save_con = {} ;
+%     for i = 1:len_imgt_con
+%         drow = max(imgt_con{i}(:,1))-min(imgt_con{i}(:,1)) ;
+%         dcol = max(imgt_con{i}(:,2))-min(imgt_con{i}(:,2)) ;
+% %         dcol/drow
+%         if dcol/drow < plate_wh_upper && dcol/drow > plate_wh_lower && dcol > 20 && drow > 20
+%             imgt_save_con{inner_loop} = imgt_con{i} ;
+%             inner_loop = inner_loop+1 ;
+%         end
+%     end
+%     imgt_merge = uint8(imgt_merge)*255 ;
+%     imshow(imgt_merge)
+% hold on
+% con = imgt_save_con{1} ;
+% step = 140 ;
+% lenspace = 70;
+% oo = 0 ;
+% con = [con(:,:);con(1:step,:)] ;
+% for i = 1:lenspace:length(con)-step
+%     pb = [con(i,1),con(i+step,1)] ;
+%     pe = [con(i,2),con(i+step,2)] ;
+% %     line(pe,pb,'Color','red') ;
+% %     hold on
+%     oo = oo+1 ;
+% %     x_min = con(i,2) ;
+% %     x_max = con(i+step,1) ;
+% %     y_min = con(i,2) ;
+% %     y_max = con(i+step,2) ;
+%     imgt_merge = insertShape((imgt_merge), 'Line',[con(i,2),con(i,1),con(i+step,2),con(i+step,1)], 'LineWidth', 5, 'Color', 'white') ;
+% end
+% oo
+% figure
+% imgbw = im2bw(imgt_merge,0.6) ;
+% imshow(imgbw)
+% oo = 0 ;
+% for i = 1:lenspace:length(con)-step
+%     pb = [con(i,1),con(i+step,1)] ;
+%     pe = [con(i,2),con(i+step,2)] ;
+%     line(pe,pb,'Color',[0.8,0,0]) ;
+%     hold on
+%     oo = oo+1 ;
+% end
+% oo
 
 %% 取出多个车牌假设域，再根据是否能检测出字符而判断是否是真正的车牌
 %%% 
@@ -146,6 +198,17 @@ while pl_norm_img_number <= length(pl_norm_img)
         disp('imgt save con is empty');
         return ;
     end
+    %% line refine
+    step = 140 ;
+    lenspace = 20;
+    con = imgt_save_con{1} ;
+    con = [con(:,:);con(1:step,:)] ;
+    imgt_merge = uint8(imgt_merge)*255 ;
+    for i = 1:lenspace:length(con)-step
+        imgt_merge = insertShape((imgt_merge), 'Line',[con(i,2),con(i,1),con(i+step,2),con(i+step,1)], 'LineWidth',6, 'Color', 'white') ;
+    end
+    imgt_merge = im2bw(imgt_merge, 0.6);
+    imgt_con = bwboundaries(imgt_merge,8, 'noholes') ;
     
     %% radon变换判断是否需要矫正车牌
     Icanny = edge(imgt_merge,'canny') ;
@@ -196,21 +259,21 @@ while pl_norm_img_number <= length(pl_norm_img)
     end
     
     %% 矫正测试
-%     figure(30)
-%     subplot(2,1,1)
-%     imshow(img_test)
-%     hold on
-%     plot(p11(1,1),p11(1,2),'g*')
-%     plot(p12(1,1),p12(1,2),'r*')
-%     plot(p21(1,1),p21(1,2),'b*')
-%     plot(p22(1,1),p22(1,2),'y*')
-%     % hold on
+    figure(30)
+    subplot(2,1,1)
+    imshow(img_test)
+    hold on
+    plot(p11(1,1),p11(1,2),'g*')
+    plot(p12(1,1),p12(1,2),'r*')
+    plot(p21(1,1),p21(1,2),'b*')
+    plot(p22(1,1),p22(1,2),'y*')
+    % hold on
 %     plot(left(:,2),left(:,1),'r*')
 %     plot(right(:,2),right(:,1),'b*')
-%     subplot(2,1,2)
-%     imshow(imgn)
-%     figure(4)
-%     imshow(imgt_merge)
+    subplot(2,1,2)
+    imshow(imgn)
+    figure(4)
+    imshow(imgt_merge)
 
 
     %% 重新得到更为细致的车牌区间，避免自适应二值化被影响。
@@ -281,8 +344,8 @@ judged_plate_num = 1 ;
 imgn_out = pl_judged_imgset{judged_plate_num} ;
 
 imgn_out = imresize(imgn_out,[plate_nor_height, plate_nor_width]) ;
-% figure
-% imshow(imgn_out)
+figure(201)
+imshow(imgn_out)
 
 % for i = 1:length(chars_con)
 %     hold on

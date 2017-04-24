@@ -6,7 +6,7 @@ clc
 clear
 close all
 %% get a frame of image
-path = 'F:\opencvjpg\' ;
+path = 'F:\opencvjpg\test_img\' ;
 file_name = '1109.jpg' ; 
 save_path = 'F:\opencvjpg\training sets\save_raw_char\' ;
 save_plate_path = 'F:\opencvjpg\training sets\save_raw_plate\' ;
@@ -117,5 +117,11 @@ for i = 1:length(cor_type_name(:,1))
     end
     fprintf(fid,'由第%d种矫正方法矫正的文件,共%d个\r\n',i,counter_inner) ;
 end
+%% 备注
+fprintf(fid,'\r\n---------------------------------------------\r\n') ;
+fprintf(fid,'第一种矫正方法既是车牌倾斜角度过小，不需要矫正\r\n') ;
+fprintf(fid,'第二种矫正方法既是车牌倾斜角度适中，可以近似看成是仿射变换，经过旋转矫正\r\n') ;
+fprintf(fid,'第一种矫正方法既是车牌倾斜角度过大，通过透视变换矫正\r\n') ;
+fprintf(fid,'\r\n---------------------------------------------\r\n') ;
 fclose(fid) ;
 

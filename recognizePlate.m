@@ -25,6 +25,8 @@
 % or not so that judge whether should correct the plate.
 % version1.6: add svm to judge whether the plate area is a real plate or
 % not
+% version1.7: add line connection to refine the plate bw image and add
+% rotate method to correct plate
 %%%
 function [plate_cell, plate_img,chars_center ,correct_type, plate_type, score] = recognizePlate(img_color)
 %% parameter initiation
@@ -46,7 +48,8 @@ plate_area_height_bias = 10 ; % 车牌假设区域宽度偏移
 img_resize_width = 800 ;
 img_resize_height = 600 ;
 remove_error_plate_ratio = 0.7 ; % 减少错误车牌假设域
-slant_threshold = 3 ; % 超过某个车牌倾斜阀值就需要矫正了
+slant_threshold = 4; % 超过某个车牌倾斜阀值就需要矫正了
+rotate_thresh = 7 ;
 %%% output parameters
 plate_cell = cell(7,1) ;
 plate_type = zeros(7,1) ;
@@ -135,7 +138,7 @@ pl_num_loop = 1 ;
 while pl_norm_img_number <= length(pl_norm_img)
     img_test = pl_norm_img{pl_norm_img_number} ;
     imgt_merge = getBluePlate(img_test) ;
-    img_dilate_core = ones(10,20) ;
+    img_dilate_core = ones(10,15) ;
     imgt_merge = imdilate(imgt_merge, img_dilate_core) ;
     imgt_con = bwboundaries(imgt_merge,8, 'noholes') ;
     len_imgt_con = length(imgt_con) ;
@@ -165,47 +168,73 @@ while pl_norm_img_number <= length(pl_norm_img)
         %%% 不需要矫正 需要标准化
         imgn = imresize(img_test,[plate_nor_height,plate_nor_width]) ;
         correct_type = 1 ;
+    elseif abs(slant_angle) > slant_threshold && abs(slant_angle) <= rotate_thresh
+        imgn = imrotate(img_test,slant_angle,'bilinear','crop') ;
+        correct_type = 2 ;
+        %%%倾斜角度不算太大，可以通过近似的仿射变换矫正。
     else
-        %% 捕获角点特征矫正车牌
-        %%% 矫正车牌
-        %%% TODO 应该根据车牌是否倾斜而自行决定是否采取车牌矫正。
+        %% line refine
+        step = 140 ;
+        lspace = 70 ;
         list_len = zeros(length(imgt_save_con),1) ;
         for i = 1:length(imgt_save_con)
             list_len(i) = length(imgt_save_con{i});
         end
         [~, idx_list] = max(list_len) ;
-        list = imgt_save_con{idx_list} ;
-        [points,left,right] = getPlateCorner(list) ;
+        conlist = imgt_save_con{idx_list} ;
+        conlist = [conlist(:,:);conlist(1:step,:)] ;
+        imgt_merge = uint8(imgt_merge)*255 ;
+        for i = 1:lspace:length(conlist)-step
+            imgt_merge = insertShape((imgt_merge), 'Line',[conlist(i,2),conlist(i,1),conlist(i+step,2),conlist(i+step,1)], 'LineWidth',6, 'Color', 'white') ;
+        end
+        imgt_merge = im2bw(imgt_merge, 0.7);
+        imgt_conlist = bwboundaries(imgt_merge,8, 'noholes') ;
+%         figure(122)
+%         imshow(imgt_merge)
+       %% 捕获角点特征矫正车牌
+        %%% 倾斜角度太大，已经不能用仿射变换近似了，所以要采用透视变换，但是存在一定更严重变形的风险。
+        %%% TODO 应该根据车牌是否倾斜而自行决定是否采取车牌矫正。   
+        list_len = zeros(length(imgt_conlist),1) ;
+        for i = 1:length(imgt_conlist)
+            list_len(i) = length(imgt_conlist{i});
+        end
+        [~, idx_list] = max(list_len) ;
+        list = imgt_conlist{idx_list} ;
+        [points,~,~] = getPlateCorner(list) ;
         p11 = points(1,:) ;
         p12 = points(2,:) ;
         p21 = points(3,:) ;
         p22 = points(4,:) ;
-        v1 = p11-p21 ;
-        v2 = p12-p22 ;
-        v3 = p12-p11 ;
-        v4 = p22-p21 ;
-        para1 = v1*v2'/(norm(v1,2)*norm(v2,2)) ;
-        para2 = v3*v4'/(norm(v3,2)*norm(v4,2)) ;
-        if para1 > 0.99 && para2 > 0.99 && 0
-            imgn = imrotate(img_test,slant_angle,'bilinear','crop') ;
-            correct_type = 2 ;
-            %%% 实验效果不佳
-        else
-            p11 = p11(end:-1:1) ;
-            p12 = p12(end:-1:1) ;
-            p21 = p21(end:-1:1) ;
-            p22 = p22(end:-1:1) ;
-            area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
-            area_old = [p11;p12;p21;p22] ;
-            Tran = calc_homography(area_old,area_new) ;
-            Tran = maketform('projective',Tran);   %投影矩阵
-            [imgn, X, Y] = imtransform(img_test,Tran);     %投影
-            correct_type = 3 ;
-        end
+        p11 = p11(end:-1:1) ;
+        p12 = p12(end:-1:1) ;
+        p21 = p21(end:-1:1) ;
+        p22 = p22(end:-1:1) ;
+        area_new = [50,50;50+plate_nor_width,50;50,50+plate_nor_height;50+plate_nor_width,50+plate_nor_height] ;
+        area_old = [p11;p12;p21;p22] ;
+        Tran = calc_homography(area_old,area_new) ;
+        Tran = maketform('projective',Tran);   %投影矩阵
+        [imgn, X, Y] = imtransform(img_test,Tran);     %投影
+        correct_type = 3 ;
     end
 
+    %% 矫正测试
+%     figure(30)
+%     subplot(2,1,1)
+%     imshow(img_test)
+%     hold on
+%     plot(p11(1,1),p11(1,2),'g*')
+%     plot(p12(1,1),p12(1,2),'r*')
+%     plot(p21(1,1),p21(1,2),'b*')
+%     plot(p22(1,1),p22(1,2),'y*')
+%     % hold on
+% %     plot(left(:,2),left(:,1),'r*')
+% %     plot(right(:,2),right(:,1),'b*')
+%     subplot(2,1,2)
+%     imshow(imgn)
+%     figure(4)
+%     imshow(imgt_merge) 
+    
     %% 删除车牌边框
-
     imgn_merge = getBluePlate(imgn) ;
     img_dilate_core = ones(5,15) ;
     imgn_merge = imdilate(imgn_merge, img_dilate_core) ;
@@ -230,7 +259,7 @@ while pl_norm_img_number <= length(pl_norm_img)
     imgn_out = imerode(imgn_out, erode_core) ;
     imgn_out = im2bw(imgn_out,0.6) ;
 
-    %% 判断是否是车牌
+    %% svm分类器判断是否是车牌
     imgn_out = imresize(imgn_out, [plate_nor_height, plate_nor_width]) ;
     imvec = double(reshape(imgn_out,1,plate_nor_height*plate_nor_width)) ;
     [label, score] = predict(svm_model, imvec) ;

@@ -1,4 +1,4 @@
-function [rimg num] = drawPlate(img, con_cell)
+function [rimg, num] = drawPlate(img, con_cell)
 con_size = size(con_cell) ;
 con_size = con_size(1,2) ;
 rimg = img ;
