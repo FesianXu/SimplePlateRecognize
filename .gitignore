@@ -6,3 +6,4 @@
 !*.txt
 /doc/paper/
 !/doc/
+!/res/

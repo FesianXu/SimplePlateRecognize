@@ -10,22 +10,7 @@ path = 'F:\opencvjpg\test_img\' ;
 file_name = '1109.jpg' ; 
 save_path = 'F:\opencvjpg\training sets\save_raw_char\' ;
 save_plate_path = 'F:\opencvjpg\training sets\save_raw_plate\' ;
-%%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
-%%% 1043 34 71 multiple test addressed!
-%%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!
-%%% 1016 imgNormal failed
-%%% 74 refine failed
-%%% 1014 汉字定位问题
-%%% 在车牌分辨率比较低的时候可能会出现一些小问题 49
-%%% a little problem in chars segment in 1110
-%%% 1016 分割效果不是特别好
-% file_path = [path, file_name] ;
-% img_color = imread(file_path) ;
-% [plate_cell, plate_type, score] = recognizePlate(img_color) ;
-% for i = 1:length(plate_cell)
-%     subplot(1,length(plate_cell),i)
-%     imshow(plate_cell{i})
-% end
+run_platform = 'MATLAB R2016a' ;
 
 dirimg = dir(path) ;
 invalid = 0 ;
@@ -50,11 +35,11 @@ for j = 3:length(dirimg)
         invalid_file_name{invalid} = dirimg(j).name ;
         continue ;
     end
-%     if isempty(plate_cell{1})
-%         invalid = invalid+1 ;
-%         invalid_file_name{invalid} = dirimg(j).name ;
-%         continue ;
-%     end
+    if isempty(plate_cell{1})
+        invalid = invalid+1 ;
+        invalid_file_name{invalid} = dirimg(j).name ;
+        continue ;
+    end
     %% save plate img into folder
     save_plate_name = [save_plate_path, num2str(j-2),'---',dirimg(j).name] ;
     imwrite(plate_img, save_plate_name) ;
@@ -69,10 +54,10 @@ for j = 3:length(dirimg)
 %     plot(chars_center(:,2),chars_center(:,1),'r*')
     valid = valid+1 ;
     %% save chars
-%     for i = 1:length(plate_cell)
-%         save_name = [save_path, num2str(j-2),'--',num2str(i),'.jpg'];
-%         imwrite(plate_cell{i},save_name) ;
-%     end
+    for i = 1:length(plate_cell)
+        save_name = [save_path, num2str(j-2),'--',num2str(i),'.jpg'];
+        imwrite(plate_cell{i},save_name) ;
+    end
 end
 t_end = cputime ;
 %%% run record logging
@@ -122,6 +107,7 @@ fprintf(fid,'\r\n---------------------------------------------\r\n') ;
 fprintf(fid,'第一种矫正方法既是车牌倾斜角度过小，不需要矫正\r\n') ;
 fprintf(fid,'第二种矫正方法既是车牌倾斜角度适中，可以近似看成是仿射变换，经过旋转矫正\r\n') ;
 fprintf(fid,'第一种矫正方法既是车牌倾斜角度过大，通过透视变换矫正\r\n') ;
+fprintf(fid,'运行环境为：%s\r\n',run_platform) ;
 fprintf(fid,'\r\n---------------------------------------------\r\n') ;
 fclose(fid) ;
 

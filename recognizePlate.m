@@ -49,7 +49,7 @@ img_resize_width = 800 ;
 img_resize_height = 600 ;
 remove_error_plate_ratio = 0.7 ; % 减少错误车牌假设域
 slant_threshold = 4; % 超过某个车牌倾斜阀值就需要矫正了
-rotate_thresh = 7 ;
+rotate_thresh = 8 ;
 %%% output parameters
 plate_cell = cell(7,1) ;
 plate_type = zeros(7,1) ;
@@ -175,31 +175,39 @@ while pl_norm_img_number <= length(pl_norm_img)
     else
         %% line refine
         step = 140 ;
-        lspace = 70 ;
-        list_len = zeros(length(imgt_save_con),1) ;
-        for i = 1:length(imgt_save_con)
-            list_len(i) = length(imgt_save_con{i});
+        lenspace = 20;
+        if length(imgt_save_con) ~= 1
+            list_len = zeros(length(imgt_save_con),1) ;
+            for i = 1:length(imgt_save_con)
+                list_len(i) = length(imgt_save_con{i});
+            end
+            [~, idx_list] = max(list_len) ;
+        else
+            idx_list = 1 ;
         end
-        [~, idx_list] = max(list_len) ;
-        conlist = imgt_save_con{idx_list} ;
-        conlist = [conlist(:,:);conlist(1:step,:)] ;
+        con = imgt_save_con{idx_list} ;
+        con = [con(:,:);con(1:step,:)] ;
         imgt_merge = uint8(imgt_merge)*255 ;
-        for i = 1:lspace:length(conlist)-step
-            imgt_merge = insertShape((imgt_merge), 'Line',[conlist(i,2),conlist(i,1),conlist(i+step,2),conlist(i+step,1)], 'LineWidth',6, 'Color', 'white') ;
+        for i = 1:lenspace:length(con)-step
+            imgt_merge = insertShape((imgt_merge), 'Line',[con(i,2),con(i,1),con(i+step,2),con(i+step,1)], 'LineWidth',6, 'Color', 'white') ;
         end
-        imgt_merge = im2bw(imgt_merge, 0.7);
-        imgt_conlist = bwboundaries(imgt_merge,8, 'noholes') ;
-%         figure(122)
-%         imshow(imgt_merge)
+        imgt_merge = im2bw(imgt_merge, 0.6);
+        imgt_save_con = bwboundaries(imgt_merge,8, 'noholes') ;
        %% 捕获角点特征矫正车牌
         %%% 倾斜角度太大，已经不能用仿射变换近似了，所以要采用透视变换，但是存在一定更严重变形的风险。
-        %%% TODO 应该根据车牌是否倾斜而自行决定是否采取车牌矫正。   
-        list_len = zeros(length(imgt_conlist),1) ;
-        for i = 1:length(imgt_conlist)
-            list_len(i) = length(imgt_conlist{i});
+        %%% TODO 应该根据车牌是否倾斜而自行决定是否采取车牌矫正。
+        if length(imgt_save_con) ~= 1
+            list_len = zeros(length(imgt_save_con),1) ;
+            for i = 1:length(imgt_save_con)
+                list_len(i) = length(imgt_save_con{i});
+            end
+            [~, idx_list] = max(list_len) ;
+        else
+            idx_list = 1 ;
         end
-        [~, idx_list] = max(list_len) ;
-        list = imgt_conlist{idx_list} ;
+        list = imgt_save_con{idx_list} ;
+%         k = convhull(list(:,1),list(:,2)) ;
+%         list = list(k,:) ;
         [points,~,~] = getPlateCorner(list) ;
         p11 = points(1,:) ;
         p12 = points(2,:) ;
@@ -286,13 +294,30 @@ judged_plate_num = 1 ;
 imgn = pl_judged_imgset{judged_plate_num} ;
 plate_img = imgn ;
 
+imgn_con = bwboundaries(plate_img,8, 'noholes') ;
+char_con = {} ;
+inner = 1 ;
+for i = 1:length(imgn_con)
+    if length(imgn_con{i}(:,1)) < 20
+        continue ;
+    end
+    drow = max(imgn_con{i}(:,1))-min(imgn_con{i}(:,1)) ;
+    dcol = max(imgn_con{i}(:,2))-min(imgn_con{i}(:,2)) ;
+    pval = drow/dcol ;
+    if pval > 1.5 && pval < 5 && drow > 10 && dcol > 5 && drow < 40 && dcol < 20
+        char_con{inner} = imgn_con{i} ; 
+        inner = inner+1 ;
+    end
+end
+%% segment the chars in plate
+[exchar,center_set] = regetChar(imgn_out, char_con) ;
+exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
+% figure
+% for i = 1:length(exchar)
+%     subplot(1,length(exchar),i)
+%     imshow(exchar{i})
+% end
 
-% [exchar,center_set] = regetChar(imgn_out, chars_con) ;
-% exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the size of char image
-
-%% recognize the chars in plate
-exchar = {} ;
-center_set = {} ;
 
 for i = 1:length(exchar)
     plate_cell{i} = exchar{i} ;

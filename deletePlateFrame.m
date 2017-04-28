@@ -13,3 +13,5 @@ for i = 1:sizeimg(1,1)
         img_out(i,:) = img(i,:) ;
     end
 end
+
+
