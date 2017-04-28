@@ -56,7 +56,7 @@ for j = 3:length(dirimg)
 %         imwrite(plate_cell{i},save_name) ;
 %     end
     %% begin to save auto recognize samples
-    saveRecognizeChars(plate_img, plate_type, auto_reg_save_path) ;
+    saveRecognizeChars(plate_cell, plate_type, auto_reg_save_path) ;
 
 end
 t_end = cputime ;
