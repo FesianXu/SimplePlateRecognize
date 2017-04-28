@@ -63,6 +63,7 @@ if strcmp(isnormalize,'yes') == 1
         if strcmp(alp_raw(i).name,'.') == 0 && strcmp(alp_raw(i).name,'..') == 0
             imgf_path = [rawset_path,'alphabet\',alp_raw(i).name,'\'] ;
             inner_dir = dir(imgf_path) ;
+            inner_loop = 1 ;
             for j = 1:length(inner_dir)
                 if inner_dir(j).isdir == 0
                     img = imread([imgf_path, inner_dir(j).name]) ;
@@ -77,11 +78,11 @@ if strcmp(isnormalize,'yes') == 1
         end
     end
     %% normalize numbers
-    inner_loop = 1 ;
     for i = 1:length(number_raw)
         if strcmp(number_raw(i).name,'.') == 0 && strcmp(number_raw(i).name,'..') == 0
             imgf_path = [rawset_path,'numbers\',number_raw(i).name,'\'] ;
             inner_dir = dir(imgf_path) ;
+            inner_loop = 1 ;
             for j = 1:length(inner_dir)
                 if inner_dir(j).isdir == 0
                     img = imread([imgf_path, inner_dir(j).name]) ;

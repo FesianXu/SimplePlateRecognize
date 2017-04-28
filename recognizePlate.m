@@ -29,6 +29,7 @@
 % rotate method to correct plate
 %%%
 function [plate_cell, plate_img,chars_center ,correct_type, plate_type, score] = recognizePlate(img_color)
+tic ; % 计时开始
 %% parameter initiation
 %%% 一些参数的初始化和设定
 char_nor_width = 16*2 ;
@@ -58,9 +59,18 @@ score = zeros(7,1) ;
 %%% 先归一化到一个中等的尺度，并且遍历可能的车牌区域
 %%% 然后在较大尺度中提取出车牌域进行下一步处理。
 model_name = '.\train_data\isplate_svm.mat' ;
+decide_chartype_svm_path = '.\train_data\decide_chartype_svm_model.mat' ;
+numbers_svm_path = '.\train_data\numbers_svm_model.mat' ;
+alphabet_svm_path = '.\train_data\alphabet_svm_model.mat' ;
 model = load(model_name);
 svm_model = model.svm_model ;
-tic ; % 计时开始
+decide_chartype_svm = load(decide_chartype_svm_path) ;
+decide_chartype_svm = decide_chartype_svm.Mdl ;
+numbers_svm = load(numbers_svm_path) ;
+numbers_svm = numbers_svm.Mdl ;
+alphabet_svm = load(alphabet_svm_path) ;
+alphabet_svm = alphabet_svm.Mdl ;
+
 %% get image and turn it to hsv space
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
@@ -318,11 +328,25 @@ exchar = imgNormal(exchar, char_nor_width,char_nor_height) ; % normalize the siz
 %     imshow(exchar{i})
 % end
 
-
 for i = 1:length(exchar)
     plate_cell{i} = exchar{i} ;
 end
 chars_center = center_set ;
+%% recognize plate chars
+for i = 1:length(exchar)
+    img = exchar{i} ;
+    verproj = vertical_projection(img)' ;
+    horproj = horizonal_projection(img)' ;
+    allproj = reshape(img,1,length(img(:,1))*length(img(1,:))) ;
+    proj = [verproj,horproj,allproj] ;
+    [type_label,~] = predict(decide_chartype_svm,proj) ;
+    if type_label == 1
+        [plate_type(i),~] = predict(numbers_svm,proj) ;
+    elseif type_label == 2
+        [plate_type(i),~] = predict(alphabet_svm,proj) ;
+    end
+end
+
 toc ; % 计时结束
 
 

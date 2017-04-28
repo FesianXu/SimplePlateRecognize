@@ -1,0 +1,3 @@
+其中，auto_samples_sets 是经过程序自动筛选出来的样本，不一定完全正确，需要进一步人工标注处理等。
+test_set是测试集合
+trainning_set是训练集合

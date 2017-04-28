@@ -10,6 +10,7 @@ path = 'F:\opencvjpg\test_img\' ;
 file_name = '1109.jpg' ; 
 save_path = 'F:\opencvjpg\training sets\save_raw_char\' ;
 save_plate_path = 'F:\opencvjpg\training sets\save_raw_plate\' ;
+auto_reg_save_path = '.\res\auto_samples_set\' ;
 run_platform = 'MATLAB R2016a' ;
 
 dirimg = dir(path) ;
@@ -29,7 +30,7 @@ for j = 3:length(dirimg)
     file_name = [path,dirimg(j).name] ;
     img_color = imread(file_name) ;
     try
-        [plate_cell, plate_img, chars_center,cor_type,plate_type, score] = recognizePlate(img_color) ;
+        [plate_cell, plate_img, chars_center,correct_type,plate_type, score] = recognizePlate(img_color) ;
     catch
         invalid = invalid+1 ;
         invalid_file_name{invalid} = dirimg(j).name ;
@@ -44,20 +45,19 @@ for j = 3:length(dirimg)
     save_plate_name = [save_plate_path, num2str(j-2),'---',dirimg(j).name] ;
     imwrite(plate_img, save_plate_name) ;
     %% save correction types and image's names
-    if cor_type ~= 0
-        cor_type_name{cor_type,cor_counter(cor_type)} = dirimg(j).name ;
-        cor_counter(cor_type) = cor_counter(cor_type)+1 ;
+    if correct_type ~= 0
+        cor_type_name{correct_type,cor_counter(correct_type)} = dirimg(j).name ;
+        cor_counter(correct_type) = cor_counter(correct_type)+1 ;
     end
-    
-%     imshow(plate_img)
-%     hold on
-%     plot(chars_center(:,2),chars_center(:,1),'r*')
     valid = valid+1 ;
     %% save chars
-    for i = 1:length(plate_cell)
-        save_name = [save_path, num2str(j-2),'--',num2str(i),'.jpg'];
-        imwrite(plate_cell{i},save_name) ;
-    end
+%     for i = 1:length(plate_cell)
+%         save_name = [save_path, num2str(j-2),'--',num2str(i),'.jpg'];
+%         imwrite(plate_cell{i},save_name) ;
+%     end
+    %% begin to save auto recognize samples
+    saveRecognizeChars(plate_img, plate_type, auto_reg_save_path) ;
+
 end
 t_end = cputime ;
 %%% run record logging
