@@ -6,7 +6,7 @@ clc
 clear
 close all
 %% get a frame of image
-path = 'F:\opencvjpg\test_img\' ;
+path = 'F:\opencvjpg\' ;
 file_name = '1109.jpg' ; 
 save_path = 'F:\opencvjpg\training sets\save_raw_char\' ;
 save_plate_path = 'F:\opencvjpg\training sets\save_raw_plate\' ;
@@ -51,10 +51,10 @@ for j = 3:length(dirimg)
     end
     valid = valid+1 ;
     %% save chars
-%     for i = 1:length(plate_cell)
-%         save_name = [save_path, num2str(j-2),'--',num2str(i),'.jpg'];
-%         imwrite(plate_cell{i},save_name) ;
-%     end
+    for i = 1:length(plate_cell)
+        save_name = [save_path, num2str(j-2),'--',num2str(i),'.jpg'];
+        imwrite(plate_cell{i},save_name) ;
+    end
     %% begin to save auto recognize samples
     saveRecognizeChars(plate_cell, plate_type, auto_reg_save_path) ;
 

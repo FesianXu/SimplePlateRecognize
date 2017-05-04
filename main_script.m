@@ -62,6 +62,8 @@ erode_core = ones(1,1) ;
 img_merge = imerode(img_merge, erode_core) ;
 dilate_core = ones(10,10) ;
 img_merge = imdilate(img_merge, dilate_core) ;
+figure
+imshow(img_merge)
 %%% 进行形态学闭操作，得出初步车牌目标二值图
 img_merge_con = bwboundaries(img_merge,8, 'noholes') ; %% 8-连通域检测
 len_img_merge_con = length(img_merge_con) ;

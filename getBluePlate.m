@@ -22,3 +22,4 @@ h_tmp((h_img >= h_img_down & h_img <= h_img_up)) = 1 ;
 s_tmp(s_img >= s_img_down & s_img < s_img_up) = 1 ;
 v_tmp(v_img >= v_img_down & v_img <= v_img_up) = 1 ;
 merge_img = h_tmp & s_tmp & v_tmp;
+

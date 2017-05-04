@@ -27,6 +27,10 @@
 % not
 % version1.7: add line connection to refine the plate bw image and add
 % rotate method to correct plate
+% version1.8: add svm to classfy the characters,and use features like 
+% [vertical-projection,horizon-projection,all-pixels]. add automatically
+% generate the new samples function, but not very reliable, need to be
+% checked up.
 %%%
 function [plate_cell, plate_img,chars_center ,correct_type, plate_type, score] = recognizePlate(img_color)
 tic ; % 计时开始
@@ -333,6 +337,8 @@ for i = 1:length(exchar)
 end
 chars_center = center_set ;
 %% recognize plate chars
+%%% ToDo: 多分类的predict太慢，要考虑优化方案，比如拆分多个二分类后采用小型的多分类，因为
+%%% 这里的多分类估计是指数式上升的复杂度的。
 for i = 1:length(exchar)
     img = exchar{i} ;
     verproj = vertical_projection(img)' ;

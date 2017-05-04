@@ -2,9 +2,9 @@
 clc
 clear
 close all
-path = 'F:\opencvjpg\test_img\' ;
+path = 'F:\opencvjpg\' ;
 auto_reg_save_path = '.\res\auto_samples_set\' ;
-file_name = '43.jpg' ;
+file_name = '1197.jpg' ;
 file_path = [path, file_name] ;
 img = imread(file_path) ;
 
@@ -15,7 +15,6 @@ for i = 1:length(plate_cell)
     title(getCharName(plate_type(i)))
 end
 
-saveRecognizeChars(plate_cell, plate_type, auto_reg_save_path) ;
 
 
 
