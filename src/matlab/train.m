@@ -158,8 +158,8 @@ tic ;
 % feature = feature{1} ;
 % type = struct2cell(load(type_mat_path)) ;
 % type = type{1} ;
-% t = templateSVM('Standardize',1) ;
-% Mdl = fitcecoc(feature,type,'Learners',t);
+t = templateSVM('Standardize',1) ;
+Mdl = fitcecoc(feature,type,'Learners',t);
 % save(decide_chartype_svm_path,'Mdl') ;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

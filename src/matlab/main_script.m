@@ -35,16 +35,16 @@ img_resize_width = 800 ;
 img_resize_height = 600 ;
 %%% 先归一化到一个中等的尺度，并且遍历可能的车牌区域
 %%% 然后在较大尺度中提取出车牌域进行下一步处理。
-model_name = '.\train_data\isplate_svm.mat' ;
-model = load(model_name);
-svm_model = model.svm_model ;
+% model_name = '.\train_data\isplate_svm.mat' ;
+% model = load(model_name);
+% svm_model = model.svm_model ;
 
 tic ; % 计时开始
 %% get image and turn it to hsv space
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
 path = 'F:\opencvjpg\' ;
-file_name = '19.jpg' ; 
+file_name = '48.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!
@@ -58,12 +58,22 @@ file_path = [path, file_name] ;
 img_color = imread(file_path) ;
 img_color_resize = imresize(img_color,[img_resize_height,img_resize_width]) ;
 img_merge = getBluePlate(img_color_resize) ; %%% get blue area and mask blue area with pixel 1
-erode_core = ones(1,1) ;
-img_merge = imerode(img_merge, erode_core) ;
-dilate_core = ones(10,10) ;
-img_merge = imdilate(img_merge, dilate_core) ;
 figure
 imshow(img_merge)
+
+
+
+erode_core = ones(2,2) ;
+img_merge = imerode(img_merge, erode_core) ;
+
+figure
+imshow(img_merge)
+dilate_core = ones(10,10) ;
+img_merge = imdilate(img_merge, dilate_core) ;
+
+figure
+imshow(img_merge)
+
 %%% 进行形态学闭操作，得出初步车牌目标二值图
 img_merge_con = bwboundaries(img_merge,8, 'noholes') ; %% 8-连通域检测
 len_img_merge_con = length(img_merge_con) ;
