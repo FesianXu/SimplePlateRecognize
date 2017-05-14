@@ -1,17 +1,18 @@
 # 忽略所有非m文件和非txt文件
 /*
-!/res/huge_samples/
-/res/huge_samples/0-所有样本/
-/res/huge_samples/1-训练样本集/
-/res/huge_samples/2-测试图像集/
-/res/huge_samples/normSamples/
-
 
 !/test_record/
 /test_record/mat_files/
-!*.m
 !*.txt
+# 保存实验纪录
+
 
 /doc/paper/
 !/doc/
+# 保存一些车牌国标尺寸图片
+
 !/src/
+# 保存源代码
+
+
+!/res/test_set/
