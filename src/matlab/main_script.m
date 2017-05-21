@@ -44,7 +44,7 @@ tic ; % 计时开始
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
 path = 'F:\opencvjpg\' ;
-file_name = '48.jpg' ; 
+file_name = '1014.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!
@@ -58,21 +58,10 @@ file_path = [path, file_name] ;
 img_color = imread(file_path) ;
 img_color_resize = imresize(img_color,[img_resize_height,img_resize_width]) ;
 img_merge = getBluePlate(img_color_resize) ; %%% get blue area and mask blue area with pixel 1
-figure
-imshow(img_merge)
-
-
-
 erode_core = ones(2,2) ;
 img_merge = imerode(img_merge, erode_core) ;
-
-figure
-imshow(img_merge)
 dilate_core = ones(10,10) ;
 img_merge = imdilate(img_merge, dilate_core) ;
-
-figure
-imshow(img_merge)
 
 %%% 进行形态学闭操作，得出初步车牌目标二值图
 img_merge_con = bwboundaries(img_merge,8, 'noholes') ; %% 8-连通域检测
@@ -164,6 +153,8 @@ while pl_norm_img_number <= length(pl_norm_img)
 
     %% radon变换判断是否需要矫正车牌
     Icanny = edge(imgt_merge,'canny') ;
+    figure(8)
+    imshow(imgt_merge)
     theta = 1:180;
     [R,~] = radon(Icanny,theta);
     [~,J] = find(R >= max(max(R)));

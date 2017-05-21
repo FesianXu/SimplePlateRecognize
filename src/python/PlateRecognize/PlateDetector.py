@@ -13,13 +13,14 @@ import cv2
 import numpy as np
 import ImageManager
 import test
+import matplotlib.pyplot as plt
 
 
 
 
 class PlateDetector(object):
     '''
-    检测图像中车牌的区域
+    检测图像中车牌的区域, 并予以车牌矫正， 车牌区域与否判断等
     '''
     __img_levels = 255
     __h_img_upper = 0.720*180
@@ -75,11 +76,43 @@ class PlateDetector(object):
                 img_mat.append(img_tmp)
         return img_mat
 
+    @test.timeit
     def __rotateAngle(self, img):
         '''
-        :param img: 未校准车牌区域
+        :param img: 未校准车牌区域, 二值图
         :return: 倾斜角度
         '''
+        img_canny = cv2.Canny(img*255, 50, 150)
+        lines = cv2.HoughLinesP(img_canny, 1, np.pi/180, threshold=100)
+
+        if lines is not None:
+            for each in lines:
+                theta = each[0, 1]
+                k = -np.cos(theta)/np.sin(theta)
+                angle = round(np.arctan(k)*180/np.pi)
+                print(angle)
+        else:
+            return None
+        return 0
+
+
+    def __calc_homography(self, proj_before, proj_after):
+        '''
+        ::计算单因性矩阵，用于透视变换
+        :param proj_before: 变换前的四点坐标
+        :param proj_after: 变换后的四点坐标
+        :return: 单因性矩阵
+        '''
+        pass
+
+
+    def __projectionCorrect(self, img, hull):
+        '''
+        :param img: 输入的彩色图像， 车牌区域，未校准
+        :param hull: 车牌区域的凸包
+        :return: 透视变换之后的车牌
+        '''
+
         pass
 
 
@@ -87,18 +120,20 @@ class PlateDetector(object):
     def plateCorrect(self, img_mat):
         for img in img_mat:
             img_blue = self.__getBlueRegion(img)
+            dilate_core = np.ones((10, 15), np.uint8)
+            img_blue = cv2.dilate(img_blue, dilate_core)
             _, contours, _ = cv2.findContours(img_blue, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             plate_list = []
             for each in contours:
                 dcol, drow = max(each[:, :, 0])-min(each[:, :, 0]), max(each[:, :, 1])-min(each[:, :, 1])
                 if self.__plate_wh_lower <= dcol/(drow+0.0001) <= self.__plate_wh_upper and dcol >= self.__plate_wh_least_width \
                         and drow >= self.__plate_wh_least_height:
-                    plate_list.append(each)
+                    hull = cv2.convexHull(each)
+                    plate_list.append(hull)
             if plate_list:
-                img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                _, img_bin = cv2.threshold(img_gray, 0, 255, cv2.THRESH_OTSU)
-                # angle = self.__rotateAngle(img_gray)
-                show(img_bin)
+                # 如果存在车牌
+                # angle = self.__rotateAngle(img_blue)
+                cor_img = self.__projectionCorrect(img, plate_list[0])
                 pass
 
 
