@@ -1,0 +1,17 @@
+# 忽略所有非m文件和非txt文件
+/*
+
+!/test_record/
+/test_record/mat_files/
+!*.txt
+# 保存实验纪录
+
+
+/doc/paper/
+!/doc/
+# 保存一些车牌国标尺寸图片
+
+!/src/
+# 保存源代码
+
+# gitignore的二层目录似乎会出现问题
