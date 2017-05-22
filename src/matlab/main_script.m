@@ -44,7 +44,7 @@ tic ; % 计时开始
 %%% 根据先验知识，提取出车牌区域，需要注意的是，需要排除一些明显的非车牌域
 %%% 因为是读图片，而不是读视频，所以不需要做动态模糊处理。
 path = 'F:\opencvjpg\' ;
-file_name = '1014.jpg' ; 
+file_name = '1016.jpg' ; 
 %%% 1014 1016 1026 big problem, 71 is too gray 1071 addressed !
 %%% 1043 34 71 multiple test addressed!
 %%% 1080 1120 regetchar failed, the cell have been over 8 list addressed!

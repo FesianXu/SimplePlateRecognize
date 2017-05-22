@@ -20,5 +20,5 @@ function T = calc_homography(points1, points2)
 
     [~, ~,V] = svd(A);
     h = V(:,9) ./ V(9,9);
-    T= reshape(h,3,3);
+    T = reshape(h,3,3);
 end

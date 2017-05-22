@@ -23,5 +23,33 @@ def timeit(func):
 
 
 
+
+windowName = 'img'
+coordinate = []
+def mouse_cb(event, x, y, flags, params):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        coordinate.append([x, y])
+
+@timeit
+def correct(after):
+     img_correct = cv2.warpPerspective(img, homograghy, (180, 48))
+     return img_correct
+
 if __name__ == '__main__':
-    pass
+    path = 'F:/opencvjpg/41.jpg'
+    img = cv2.imread(path)
+    cv2.namedWindow(windowName)
+    cv2.setMouseCallback(windowName, mouse_cb, [img]) # mouse call back
+    while True:
+        cv2.imshow(windowName, img)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    after = [[0, 0], [180, 0], [0, 48], [180, 48]]
+    after = np.array(after, np.float32)
+    coordinate = np.array(coordinate, np.float32)
+    homograghy = cv2.getPerspectiveTransform(coordinate, after)
+    print(homograghy)
+    img_correct = correct(after)
+    cv2.imshow('new', img_correct)
+    cv2.waitKey(-1)
+    cv2.destroyAllWindows()

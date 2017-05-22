@@ -20,7 +20,8 @@ import matplotlib.pyplot as plt
 
 class PlateDetector(object):
     '''
-    检测图像中车牌的区域, 并予以车牌矫正， 车牌区域与否判断等
+    检测图像中车牌的区域, 并予以车牌矫正， 边框去除，车牌区域与否判断等, 最终应得到一个经过矫正的合适的车牌区域，交于下一
+    步字符分割
     '''
     __img_levels = 255
     __h_img_upper = 0.720*180
@@ -33,6 +34,8 @@ class PlateDetector(object):
     __plate_wh_lower = 1.3  # 车牌长宽比例下限
     __plate_wh_least_width = 50  # 车牌至少长度
     __plate_wh_least_height = 30  # 车牌至少宽度
+    __plate_norm_width = 160  # 车牌标准化长度
+    __plate_norm_height = 48  # 车牌标准宽度
 
     def __init__(self):
         pass
@@ -55,6 +58,7 @@ class PlateDetector(object):
     @test.timeit
     def getPlateRegion(self, img):
         '''
+        :: 得出车牌的区域，未经过矫正，可能还是倾斜的
         :param img: 输入图片
         :return: 输出可能的车牌区域
         '''
@@ -79,6 +83,7 @@ class PlateDetector(object):
     @test.timeit
     def __rotateAngle(self, img):
         '''
+        :: 求车牌的倾斜角，以决定矫正方案
         :param img: 未校准车牌区域, 二值图
         :return: 倾斜角度
         '''
@@ -95,25 +100,59 @@ class PlateDetector(object):
             return None
         return 0
 
-
-    def __calc_homography(self, proj_before, proj_after):
+    def __getQuadrangleVertices(self, img, hull):
         '''
-        ::计算单因性矩阵，用于透视变换
-        :param proj_before: 变换前的四点坐标
-        :param proj_after: 变换后的四点坐标
-        :return: 单因性矩阵
+        :: 得到倾斜车牌的四个顶点，以用于求得单因性矩阵
+        :param img: 车牌彩色图像
+        :param hull: 车牌凸包
+        :return: 车牌的四个顶点，list储存
         '''
-        pass
+        vertices = []
+        cosine_thresh_upper, cosine_thresh_lower = 0.70, -0.70
+        calc_step = 10
+        sample_step = 1
+        list_cosine = np.concatenate((hull, hull[0:calc_step, :, :]), axis=0)
+        list_cosine = list_cosine[0::sample_step, :, :]
+        tmpcos = []
+        vertices_list = []
+        for each in range(len(list_cosine)-calc_step):
+            p1, p2 = list_cosine[each, :, :], list_cosine[each+calc_step, :, :]
+            pmedian = list_cosine[each+int(calc_step/2), :, :]
+            v1, v2 = np.squeeze(np.asarray(p1-pmedian)), np.squeeze(np.asarray(p2-pmedian))
+            angle = np.dot(v1, v2.transpose())/(np.sqrt(v1.dot(v1))*np.sqrt(v2.dot(v2)))
+            print(angle)
+            tmpcos.append(angle)
+        loop = 0
+        for eachcos in tmpcos:
+            if cosine_thresh_lower <= eachcos <= cosine_thresh_upper:
+                vertices_list.append(list_cosine[loop, :, :])
+            loop += 1
+        vertices_list = np.array(vertices_list)
 
 
+
+        plt.imshow(img[:,:,::-1])
+        plt.plot(vertices_list[:, 0, 0], vertices_list[:, 0, 1], color='r')
+        # plt.plot(hull[:,0,0], hull[:,0,1], color='b')
+        plt.show()
+        return vertices_list
+
+
+    @test.timeit
     def __projectionCorrect(self, img, hull):
         '''
         :param img: 输入的彩色图像， 车牌区域，未校准
         :param hull: 车牌区域的凸包
         :return: 透视变换之后的车牌
         '''
-
-        pass
+        src_coordinate = self.__getQuadrangleVertices(img, hull)
+        src_coordinate = np.array(src_coordinate, dtype=np.float32)
+        dst_coordinate = [[0, 0], [self.__plate_norm_width, 0], [0, self.__plate_norm_height], [self.__plate_norm_width, self.__plate_norm_height]]
+        dst_coordinate = np.array(dst_coordinate, dtype=np.float32)
+        homograghy = cv2.getPerspectiveTransform(src_coordinate, dst_coordinate)
+        if homograghy is not None:
+            img_correct = cv2.warpPerspective(img, homograghy, (self.__plate_norm_width, self.__plate_norm_height))
+            show(img_correct)
 
 
     @test.timeit
@@ -133,10 +172,17 @@ class PlateDetector(object):
             if plate_list:
                 # 如果存在车牌
                 # angle = self.__rotateAngle(img_blue)
-                cor_img = self.__projectionCorrect(img, plate_list[0])
+                self.__projectionCorrect(img, plate_list[0])
                 pass
 
-
+    def deletePlateFrames(self, img, thresh):
+        '''
+        :: 删除矫正后车牌的边框，主要根据的是边缘跳变信息
+        :param img:
+        :param thresh:
+        :return:
+        '''
+        pass
 
 
 
@@ -150,7 +196,7 @@ def show(img):
 def main():
 
     path = 'F:/opencvjpg/'
-    name = '1016.jpg'
+    name = '41.jpg'
     file_name = path+name
     img = cv2.imread(file_name)
     det = PlateDetector()
