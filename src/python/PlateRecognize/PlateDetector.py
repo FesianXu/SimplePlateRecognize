@@ -175,7 +175,7 @@ class PlateDetector(object):
         :return:
         '''
         return True
-        pass
+
 
     # @test.timeit
     def __deletePlateFrames(self, img, thresh=10):
@@ -186,7 +186,7 @@ class PlateDetector(object):
         :return:
         '''
         row = img.shape[0]
-        img_out = np.zeros(img.shape)
+        img_out = np.zeros(img.shape, np.uint8)
         for eachrow in range(row):
             horlist = img[eachrow, :]
             horlist_tmp = np.concatenate(([0], img[eachrow, :]), axis=0)
@@ -228,10 +228,10 @@ class PlateDetector(object):
                 if self.__isPlate(img_correct):
                     img_frame = self.__deletePlateFrames(img_correct)
                     # show(img_frame)
+                    erode_kernel = np.ones((2, 2))
+                    img_frame = cv2.erode(img_frame, erode_kernel)
                     img_out.append(img_frame)
         return img_out
-
-
 
 
 
@@ -253,7 +253,8 @@ def main():
     det = PlateDetector()
     blue = det.getPlateRegion(img)
     plates = det.plateCorrect(blue)
-
+    for each in plates:
+        show(each)
 
 if __name__ == '__main__':
     cv2.setUseOptimized(True)
