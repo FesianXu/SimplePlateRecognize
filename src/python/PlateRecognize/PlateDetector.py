@@ -14,8 +14,7 @@ import numpy as np
 import ImageManager
 import test
 import matplotlib.pyplot as plt
-
-
+from sklearn.cluster import KMeans
 
 
 class PlateDetector(object):
@@ -34,11 +33,17 @@ class PlateDetector(object):
     __plate_wh_lower = 1.3  # 车牌长宽比例下限
     __plate_wh_least_width = 50  # 车牌至少长度
     __plate_wh_least_height = 30  # 车牌至少宽度
-    __plate_norm_width = 160  # 车牌标准化长度
-    __plate_norm_height = 48  # 车牌标准宽度
+    __plate_norm_width = 180  # 车牌标准化长度
+    __plate_norm_height = 50  # 车牌标准宽度
+    __SVM_is_plate_model_path = '../train_data/is_plate/svm_is_plate_model'  # 判断是否是车牌的SVM
+
 
     def __init__(self):
+        '''
+        :: 加载SVM模型，用于判断是否是车牌
+        '''
         pass
+
 
     def __getBlueRegion(self, img):
         '''
@@ -55,7 +60,7 @@ class PlateDetector(object):
         img_blue = (img_h_mask & img_s_mask & img_v_mask).astype(np.uint8)
         return img_blue
 
-    @test.timeit
+
     def getPlateRegion(self, img):
         '''
         :: 得出车牌的区域，未经过矫正，可能还是倾斜的
@@ -80,7 +85,7 @@ class PlateDetector(object):
                 img_mat.append(img_tmp)
         return img_mat
 
-    @test.timeit
+
     def __rotateAngle(self, img):
         '''
         :: 求车牌的倾斜角，以决定矫正方案
@@ -100,6 +105,8 @@ class PlateDetector(object):
             return None
         return 0
 
+
+    # @test.timeit
     def __getQuadrangleVertices(self, img, hull):
         '''
         :: 得到倾斜车牌的四个顶点，以用于求得单因性矩阵
@@ -107,9 +114,8 @@ class PlateDetector(object):
         :param hull: 车牌凸包
         :return: 车牌的四个顶点，list储存
         '''
-        vertices = []
-        cosine_thresh_upper, cosine_thresh_lower = 0.70, -0.70
-        calc_step = 10
+        cosine_thresh_upper, cosine_thresh_lower = np.cos(30*np.pi/180), np.cos(155*np.pi/180)
+        calc_step = 4
         sample_step = 1
         list_cosine = np.concatenate((hull, hull[0:calc_step, :, :]), axis=0)
         list_cosine = list_cosine[0::sample_step, :, :]
@@ -120,25 +126,30 @@ class PlateDetector(object):
             pmedian = list_cosine[each+int(calc_step/2), :, :]
             v1, v2 = np.squeeze(np.asarray(p1-pmedian)), np.squeeze(np.asarray(p2-pmedian))
             angle = np.dot(v1, v2.transpose())/(np.sqrt(v1.dot(v1))*np.sqrt(v2.dot(v2)))
-            print(angle)
-            tmpcos.append(angle)
+            tmpcos.append([angle, pmedian])
         loop = 0
-        for eachcos in tmpcos:
+        for eachcos, point in tmpcos:
             if cosine_thresh_lower <= eachcos <= cosine_thresh_upper:
-                vertices_list.append(list_cosine[loop, :, :])
+                vertices_list.append(point)
             loop += 1
         vertices_list = np.array(vertices_list)
+        vertices_list_reshape = vertices_list.reshape((len(vertices_list), 2))
+        # 这里的cluster有可能因为边角点数不足而错误，需要异常捕获处理。
+        k_cluster = KMeans(n_clusters=4, random_state=0).fit(vertices_list_reshape)
+        centers = sorted(k_cluster.cluster_centers_.tolist(), key=lambda x: x[0])  # sorted by col
+        vertices_left, vertices_right = centers[0:2], centers[2:4]
+        vertices_left = sorted(vertices_left, key=lambda x: x[1])
+        vertices_right = sorted(vertices_right, key=lambda x: x[1])
+        p1, p2, p3, p4 = vertices_left[0], vertices_right[0], vertices_left[1], vertices_right[1]
+        vertices = [p1, p2, p3, p4]
+        # vertices = np.array(vertices)
+        # plt.imshow(img[:,:,::-1])
+        # plt.scatter(vertices_list[:, 0, 0], vertices_list[:, 0, 1], color='r')
+        # plt.scatter(vertices[:, 0], vertices[:, 1], color='b')
+        # plt.show()
+        return vertices
 
 
-
-        plt.imshow(img[:,:,::-1])
-        plt.plot(vertices_list[:, 0, 0], vertices_list[:, 0, 1], color='r')
-        # plt.plot(hull[:,0,0], hull[:,0,1], color='b')
-        plt.show()
-        return vertices_list
-
-
-    @test.timeit
     def __projectionCorrect(self, img, hull):
         '''
         :param img: 输入的彩色图像， 车牌区域，未校准
@@ -152,11 +163,49 @@ class PlateDetector(object):
         homograghy = cv2.getPerspectiveTransform(src_coordinate, dst_coordinate)
         if homograghy is not None:
             img_correct = cv2.warpPerspective(img, homograghy, (self.__plate_norm_width, self.__plate_norm_height))
-            show(img_correct)
+            return img_correct
+        else:
+            return None
 
 
-    @test.timeit
+    def __isPlate(self, img):
+        '''
+        :: 判断是否是车牌，利用SVM判断
+        :param img: 待测图像二值图
+        :return:
+        '''
+        return True
+        pass
+
+    # @test.timeit
+    def __deletePlateFrames(self, img, thresh=10):
+        '''
+        :: 删除矫正后车牌的边框，主要根据的是边缘跳变信息
+        :param img: 车牌二值图
+        :param thresh:
+        :return:
+        '''
+        row = img.shape[0]
+        img_out = np.zeros(img.shape)
+        for eachrow in range(row):
+            horlist = img[eachrow, :]
+            horlist_tmp = np.concatenate(([0], img[eachrow, :]), axis=0)
+            horlist = np.concatenate((horlist, [0]), axis=0)
+            delta = np.absolute((horlist-horlist_tmp))
+            delta_sum = np.sum(delta, dtype=np.int32)
+            if delta_sum >= thresh*255:
+                img_out[eachrow, :] = img[eachrow, :]
+        return img_out
+
+
+    # @test.timeit
     def plateCorrect(self, img_mat):
+        '''
+        :: 矫正车牌，利用三种可能的方法矫正
+        :param img_mat: 未矫正的车牌区域集合
+        :return: 判断后，并且矫正过后的车牌集合，数量不一定等于img_mat
+        '''
+        img_out = []
         for img in img_mat:
             img_blue = self.__getBlueRegion(img)
             dilate_core = np.ones((10, 15), np.uint8)
@@ -172,17 +221,18 @@ class PlateDetector(object):
             if plate_list:
                 # 如果存在车牌
                 # angle = self.__rotateAngle(img_blue)
-                self.__projectionCorrect(img, plate_list[0])
-                pass
+                img_correct = self.__projectionCorrect(img, plate_list[0])
+                img_correct = cv2.cvtColor(img_correct, cv2.COLOR_BGR2GRAY)
+                _, img_correct = cv2.threshold(img_correct, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                # show(img_correct)
+                if self.__isPlate(img_correct):
+                    img_frame = self.__deletePlateFrames(img_correct)
+                    # show(img_frame)
+                    img_out.append(img_frame)
+        return img_out
 
-    def deletePlateFrames(self, img, thresh):
-        '''
-        :: 删除矫正后车牌的边框，主要根据的是边缘跳变信息
-        :param img:
-        :param thresh:
-        :return:
-        '''
-        pass
+
+
 
 
 
@@ -191,6 +241,7 @@ class PlateDetector(object):
 def show(img):
     cv2.imshow('w', img)
     cv2.waitKey(-1)
+
 
 @test.timeit
 def main():
@@ -201,8 +252,8 @@ def main():
     img = cv2.imread(file_name)
     det = PlateDetector()
     blue = det.getPlateRegion(img)
+    plates = det.plateCorrect(blue)
 
-    det.plateCorrect(blue)
 
 if __name__ == '__main__':
     cv2.setUseOptimized(True)
