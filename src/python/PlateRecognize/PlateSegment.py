@@ -28,7 +28,9 @@ class PlateSegment(object):
     __char_width_upper = 40
     __char_height_upper = 40
 
-    def __init__(self):
+    def __init__(self, img_width, img_height):
+        self.__img_width = img_width
+        self.__img_height = img_height
         pass
 
 
@@ -37,12 +39,29 @@ class PlateSegment(object):
         pass
 
 
-    def __decideCharsTypes(self, real_contours):
+    @test.timeit
+    def __decideCharsTypes(self, centers_loc):
         '''
-        :: 求得目前能够知道的字符的对于车牌的相对位置
-        :param real_contours: 真实字符轮廓
-        :return: 相对位置
+        :: 求得目前能够知道的字符的对于车牌的相对位置, 因为有些内轮廓和外轮廓描述的是同一个字符，因此需要做相同轮廓融合
+        :param: centers_loc 字符中心位置list
+        :return: 分割了的相对位置和中心坐标的对应list， 和未分割的字符位置
         '''
+        centers_loc = np.array(centers_loc).reshape(len(centers_loc), 2)
+        proportion = centers_loc[:, 0]/self.__img_width
+        type_list = []
+        for each_centers in proportion:
+            diff_list = []
+            for each_divide in self.__divide_points:
+                diff_list.append(abs(each_centers-each_divide))
+            type_list.append(diff_list.index(min(diff_list)))
+        print(type_list)
+        new_centers_loc = []
+
+        return type_list
+
+
+    @test.timeit
+    def __getCharsBoxingMsg(self, real_contours):
         centers_loc = []
         width_set = []
         height_set = []
@@ -52,32 +71,29 @@ class PlateSegment(object):
             height_set.append(max_row-min_row)
             loc = ((max_col+min_col)/2, (max_row+min_row)/2)
             centers_loc.append(loc)
-        width_ideal = np.mean(width_set)
-        height_ideal = np.mean(height_set)
-        centers_loc = np.array(centers_loc)
-        return centers_loc
+        width_ideal = np.max(width_set)
+        height_ideal = np.max(height_set)
+        return centers_loc, width_ideal, height_ideal
 
 
-
-
-
-    @test.timeit
     def __deleteSmallCharRegions(self, img):
         '''
         :: 除去图片中明显不是字符的区域
         :param img:
         :return: 真实的字符轮廓
         '''
-        _, chars_contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        _, chars_contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         real_contours = []
         for each in chars_contours:
             dcol, drow = max(each[:, :, 0])-min(each[:, :, 0]), max(each[:, :, 1])-min(each[:, :, 1])
-            area = cv2.contourArea(each)
-            if self.__chars_wh_lower <= drow/dcol <= self.__chars_wh_upper and self.__chars_area_lower <= area <= self.__chars_area_upper:
-                real_contours.append(each)
+            # dcol+0.0001 防止出现除0异常
+            if self.__chars_wh_lower <= (drow/(dcol+0.0001)) <= self.__chars_wh_upper:
+                area = cv2.contourArea(each)
+                if self.__chars_area_lower <= area <= self.__chars_area_upper:
+                    real_contours.append(each)
         return real_contours
 
-
+    @test.timeit
     def plateSegment(self, img):
         '''
         :: 对二值车牌进行字符分割
@@ -85,7 +101,9 @@ class PlateSegment(object):
         :return:
         '''
         chars_contours = self.__deleteSmallCharRegions(img)
-        loc = self.__decideCharsTypes(chars_contours)
+        boxmsg = self.__getCharsBoxingMsg(chars_contours)
+        pp = self.__decideCharsTypes(boxmsg[0])
+        loc = np.array(boxmsg[0])
         plt.imshow(img)
         for each in chars_contours:
             plt.scatter(each[:,:,0], each[:,:,1], color='r')
@@ -104,8 +122,10 @@ if __name__ == '__main__':
     file_name = path+name
     img = cv2.imread(file_name)
     det = PlateDetector.PlateDetector()
-    seg = PlateSegment()
     img_mat = det.getPlateRegion(img)
     img_out = det.plateCorrect(img_mat)
+
+    seg = PlateSegment(det.getImageNormalizedWidth(), det.getImageNormalizedHeight())
+
     for each in img_out:
         seg.plateSegment(each)

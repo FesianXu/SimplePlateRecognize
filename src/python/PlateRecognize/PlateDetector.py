@@ -233,6 +233,12 @@ class PlateDetector(object):
                     img_out.append(img_frame)
         return img_out
 
+    def getImageNormalizedWidth(self):
+        return self.__plate_norm_width
+
+    def getImageNormalizedHeight(self):
+        return self.__plate_norm_height
+
 
 
 
