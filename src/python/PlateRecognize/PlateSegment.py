@@ -13,6 +13,8 @@ import test
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import line_profiler
+import sys
 
 class PlateSegment(object):
     '''
@@ -39,10 +41,10 @@ class PlateSegment(object):
         pass
 
 
-    @test.timeit
+    # @test.timeit
     def __decideCharsTypes(self, centers_loc):
         '''
-        :: 求得目前能够知道的字符的对于车牌的相对位置, 因为有些内轮廓和外轮廓描述的是同一个字符，因此需要做相同轮廓融合
+        :: 求得目前能够知道的字符的对于车牌的相对位置, 可能会有重复的，因为内轮廓和外轮廓表示同一个字符
         :param: centers_loc 字符中心位置list
         :return: 分割了的相对位置和中心坐标的对应list， 和未分割的字符位置
         '''
@@ -54,13 +56,52 @@ class PlateSegment(object):
             for each_divide in self.__divide_points:
                 diff_list.append(abs(each_centers-each_divide))
             type_list.append(diff_list.index(min(diff_list)))
-        print(type_list)
-        new_centers_loc = []
-
         return type_list
 
 
-    @test.timeit
+    def __mergeDuplicateContours(self, type_list, centers_loc):
+        '''
+        :: 融合重复的内轮廓和外轮廓中心位置
+        :param type_list: 类型字段，可能有重复的需要融合
+        :param centers_loc: 字符中心位置
+        :return: 类型字段，中心位置配对list (type_list, center_loc_list)
+        '''
+        new_type_list, new_centers_list = [-1]*7, [-1]*7
+        for each in type_list:
+            sum_row, sum_col = 0, 0
+            dup = [ind for ind, content in enumerate(type_list) if content == each]
+            new_type_list[each] = each+1
+            if len(dup) == 1:
+                new_centers_list[each] = centers_loc[dup[0]]
+            else:
+                for each_dup in dup:
+                    sum_row += centers_loc[each_dup][1]
+                    sum_col += centers_loc[each_dup][0]
+                avg_row, avg_col = sum_row/len(dup), sum_col/len(dup)
+                new_centers_list[each] = (avg_col, avg_row)
+        return new_type_list, new_centers_list
+
+
+    def __cutTheChars(self, center_set, width_set, height_set):
+        '''
+        :: 切割车牌中的字符
+        :param center_set: 中心位置集合
+        :param width_set: 长度集合
+        :param height_set: 宽度结合
+        :return: 切割好的字符图片，保存为二值图或者灰度图（灰度图需要援引）
+        '''
+        pass
+
+    def __cutTheChars(self, gray_img, center_set, width_set, height_set):
+        pass
+
+
+    def __getMissingCharsMsg(self):
+
+        pass
+
+
+    # @test.timeit
     def __getCharsBoxingMsg(self, real_contours):
         centers_loc = []
         width_set = []
@@ -93,7 +134,7 @@ class PlateSegment(object):
                     real_contours.append(each)
         return real_contours
 
-    @test.timeit
+    # @test.timeit
     def plateSegment(self, img):
         '''
         :: 对二值车牌进行字符分割
@@ -102,7 +143,10 @@ class PlateSegment(object):
         '''
         chars_contours = self.__deleteSmallCharRegions(img)
         boxmsg = self.__getCharsBoxingMsg(chars_contours)
-        pp = self.__decideCharsTypes(boxmsg[0])
+        type_list = self.__decideCharsTypes(boxmsg[0])
+        type_list, center_list = self.__mergeDuplicateContours(type_list, boxmsg[0])
+        print(type_list)
+        print(center_list)
         loc = np.array(boxmsg[0])
         plt.imshow(img)
         for each in chars_contours:
@@ -115,17 +159,19 @@ class PlateSegment(object):
 
 import PlateRecognize.PlateDetector as PlateDetector
 
+path = 'F:/opencvjpg/'
+name = '41.jpg'
+file_name = path+name
+img = cv2.imread(file_name)
 
-if __name__ == '__main__':
-    path = 'F:/opencvjpg/'
-    name = '41.jpg'
-    file_name = path+name
-    img = cv2.imread(file_name)
+def main():
     det = PlateDetector.PlateDetector()
     img_mat = det.getPlateRegion(img)
     img_out = det.plateCorrect(img_mat)
-
     seg = PlateSegment(det.getImageNormalizedWidth(), det.getImageNormalizedHeight())
-
     for each in img_out:
         seg.plateSegment(each)
+
+
+if __name__ == '__main__':
+    main()
