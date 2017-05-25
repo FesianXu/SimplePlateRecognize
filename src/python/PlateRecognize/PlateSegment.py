@@ -21,6 +21,9 @@ class PlateSegment(object):
     用于分割已经矫正好了的车牌中的字符，以供下一步字符识别使用
     '''
     __divide_points = (0.086, 0.216, 0.395, 0.525, 0.654, 0.784, 0.913)  # 依靠着车牌字符的顺序排列的比例，左方向为初始方向
+    __img_width = 0  # init in __init__
+    __img_height = 0  # init in __init__
+    __dist_between_chars = (0, 0)  # init in __init__
     __chars_wh_upper = 5
     __chars_wh_lower = 1.5  # 字符比例
     __chars_area_lower = 50  # 字符最小面积
@@ -29,10 +32,12 @@ class PlateSegment(object):
     __char_height_lower = 10
     __char_width_upper = 40
     __char_height_upper = 40
+    __default_empty_centers = -10  # 预设的车牌中心数值，当未获取中心信息时候填充，需要小于-10
 
     def __init__(self, img_width, img_height):
         self.__img_width = img_width
         self.__img_height = img_height
+        self.__dist_between_chars = (int(0.1795*self.__img_width), int(0.1295*self.__img_width))
         pass
 
 
@@ -66,7 +71,7 @@ class PlateSegment(object):
         :param centers_loc: 字符中心位置
         :return: 类型字段，中心位置配对list (type_list, center_loc_list)
         '''
-        new_type_list, new_centers_list = [-1]*7, [-1]*7
+        new_type_list, new_centers_list = [self.__default_empty_centers]*7, [self.__default_empty_centers]*7
         for each in type_list:
             sum_row, sum_col = 0, 0
             dup = [ind for ind, content in enumerate(type_list) if content == each]
@@ -82,7 +87,7 @@ class PlateSegment(object):
         return new_type_list, new_centers_list
 
 
-    def __cutTheChars(self, center_set, width_set, height_set):
+    def __cutTheChars(self, bin_plate, center_set, width_set, height_set):
         '''
         :: 切割车牌中的字符
         :param center_set: 中心位置集合
@@ -90,14 +95,55 @@ class PlateSegment(object):
         :param height_set: 宽度结合
         :return: 切割好的字符图片，保存为二值图或者灰度图（灰度图需要援引）
         '''
-        pass
+        roi_set = []
+        for each in center_set:
+            min_row, max_row = int((each[1]-height_set/2)[0]), int((each[1]+height_set/2)[0])
+            min_col, max_col = int((each[0]-width_set/2)[0]), int((each[0]+width_set/2)[0])
+            roi = bin_plate[min_row:max_row, min_col:max_col]
+            roi_set.append(roi)
+        return roi_set
 
-    def __cutTheChars(self, gray_img, center_set, width_set, height_set):
-        pass
 
 
-    def __getMissingCharsMsg(self):
 
+    @test.timeit
+    def __getMissingCharsMsgRoughly(self, type_list, center_list):
+        '''
+        :: 粗糙得到所有车牌字符中心的位置坐标
+        :param type_list: 已经分割好的字符类型，从[0-6]
+        :param center_list: 已经分割好的字符中心坐标。未获取的用__default_empty_centers表示
+        :return: 所有字符的分割好的中心位置list
+        '''
+        missing_type = [ind+1 for ind, content in enumerate(type_list) if content == self.__default_empty_centers]
+        missing_type = np.array(missing_type, np.int8)
+        type_list = np.array(type_list, np.int8)
+        new_center_list = center_list
+        sum_rows_center = sum([x[1] for x in center_list if isinstance(x, tuple)])
+        avg_rows_centers = sum_rows_center/len([x for x in center_list if isinstance(x, tuple)])
+        for each in missing_type:
+            min_diff = np.abs(type_list-each)
+            min_v, min_ind = np.min(min_diff), np.argmin(min_diff)+1
+            if min_ind > 2:  # 引导点在分割点右侧
+                if each > min_ind:  # 需要补全的字符在引导点右侧
+                    new_center_list[each-1] = (center_list[min_ind-1][0]+min_v*self.__dist_between_chars[1], avg_rows_centers)
+                else:  # 左侧
+                    if each <= 2:
+                        new_center_list[each-1] = (center_list[min_ind-1][0]-self.__dist_between_chars[0]-(min_v-1)*self.__dist_between_chars[1], avg_rows_centers)
+                    else:
+                        new_center_list[each-1] = (center_list[min_ind-1][0]-min_v*self.__dist_between_chars[1], avg_rows_centers)
+            else:  # 在分割点左侧
+                if each > min_ind:  # 需要补全的字符在引导点右侧
+                    if each > 2:
+                        new_center_list[each-1] = (center_list[min_ind-1][0]+self.__dist_between_chars[0]+(min_v-1)*self.__dist_between_chars[1], avg_rows_centers)
+                    else:
+                        new_center_list[each-1] = (center_list[min_ind-1][0]+min_v*self.__dist_between_chars[1], avg_rows_centers)
+                else:  # 左侧
+                    new_center_list[each-1] = (center_list[min_ind-1][0]-min_v*self.__dist_between_chars[1], avg_rows_centers)
+            pass
+        return new_center_list
+
+
+    def __getCharsMsgFinely(self, center_list, bin_plate):
         pass
 
 
@@ -120,7 +166,7 @@ class PlateSegment(object):
     def __deleteSmallCharRegions(self, img):
         '''
         :: 除去图片中明显不是字符的区域
-        :param img:
+        :param img: 车牌二值图
         :return: 真实的字符轮廓
         '''
         _, chars_contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -134,7 +180,7 @@ class PlateSegment(object):
                     real_contours.append(each)
         return real_contours
 
-    # @test.timeit
+    @test.timeit
     def plateSegment(self, img):
         '''
         :: 对二值车牌进行字符分割
@@ -142,17 +188,18 @@ class PlateSegment(object):
         :return:
         '''
         chars_contours = self.__deleteSmallCharRegions(img)
-        boxmsg = self.__getCharsBoxingMsg(chars_contours)
-        type_list = self.__decideCharsTypes(boxmsg[0])
-        type_list, center_list = self.__mergeDuplicateContours(type_list, boxmsg[0])
-        print(type_list)
-        print(center_list)
-        loc = np.array(boxmsg[0])
-        plt.imshow(img)
-        for each in chars_contours:
-            plt.scatter(each[:,:,0], each[:,:,1], color='r')
-            plt.scatter(loc[:,0], loc[:,1], color='b')
-        plt.show()
+        centers_loc, width_ideal, height_ideal = self.__getCharsBoxingMsg(chars_contours)
+        type_list = self.__decideCharsTypes(centers_loc)
+        type_list, center_list = self.__mergeDuplicateContours(type_list, centers_loc)
+        center_list = self.__getMissingCharsMsgRoughly(type_list, center_list)
+        roi_set = self.__cutTheChars(img, center_list, width_ideal, height_ideal)
+        # loc = np.array(center_list).reshape(len(center_list), 2)
+        # plt.imshow(img)
+        # for each in chars_contours:
+        #     plt.scatter(each[:,:,0], each[:,:,1], color='r')
+        # plt.scatter(loc[:,0], loc[:,1], color='b')
+        # plt.show()
+
 
 
 ########################################################################################################################
@@ -160,10 +207,11 @@ class PlateSegment(object):
 import PlateRecognize.PlateDetector as PlateDetector
 
 path = 'F:/opencvjpg/'
-name = '41.jpg'
+name = '1010.jpg'
 file_name = path+name
 img = cv2.imread(file_name)
 
+@test.timeit
 def main():
     det = PlateDetector.PlateDetector()
     img_mat = det.getPlateRegion(img)
@@ -174,4 +222,5 @@ def main():
 
 
 if __name__ == '__main__':
+    cv2.setUseOptimized(True)
     main()
