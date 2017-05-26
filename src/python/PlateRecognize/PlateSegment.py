@@ -95,7 +95,7 @@ class PlateSegment(object):
         :param width_set: 长度集合
         :param height_set: 宽度结合
         :param isgray: 是否需要保存为灰度图，前提是plate_img是灰度的
-        :return: 切割好的字符图片，保存为二值图或者灰度图（灰度图需要援引）
+        :return: 切割好的字符图片，保存为二值图或者灰度图（灰度图需要指明，默认是二值图）
         '''
         roi_set = []
         for ind, each in enumerate(center_set):
@@ -107,11 +107,9 @@ class PlateSegment(object):
             if isgray:
                 pass
             else:
-                _, roi = cv2.threshold(roi, 120, 255, cv2.THRESH_BINARY)
+                _, roi = cv2.threshold(roi, 120, 255, cv2.THRESH_BINARY)  # 二值图分割才需要二值化
             roi_set.append(roi)
         return roi_set
-
-
 
 
     @test.timeit
@@ -189,11 +187,11 @@ class PlateSegment(object):
         return real_contours
 
     @test.timeit
-    def plateSegment(self, img):
+    def plateSegment(self, img, isGray=False, gray_img=None):
         '''
         :: 对二值车牌进行字符分割
         :param img: 车牌的二值图
-        :return:
+        :return: roi_set 返回车牌分割的字符图像
         '''
         chars_contours = self.__deleteSmallCharRegions(img)
         centers_loc, width_ideal, height_ideal = self.__getCharsBoxingMsg(chars_contours)
@@ -201,12 +199,10 @@ class PlateSegment(object):
         type_list, center_list = self.__mergeDuplicateContours(type_list, centers_loc)
         center_list = self.__getMissingCharsMsgRoughly(type_list, center_list)
         width_set, height_set = [width_ideal]*7, [height_ideal]*7
-        roi_set = self.__cutTheChars(img, center_list, width_set, height_set)
-        # for ind, each in enumerate(roi_set):
-        #     plt.subplot(1, 7, ind+1)
-        #     plt.imshow(each)
-        # plt.show()
-
+        if isGray and gray_img is not None:
+            roi_set = self.__cutTheChars(gray_img, center_list, width_set, height_set, isGray)
+        else:
+            roi_set = self.__cutTheChars(img, center_list, width_set, height_set, isGray)
 
         # loc = np.array(center_list).reshape(len(center_list), 2)
         # plt.imshow(img)
@@ -214,7 +210,7 @@ class PlateSegment(object):
         #     plt.scatter(each[:,:,0], each[:,:,1], color='r')
         # plt.scatter(loc[:,0], loc[:,1], color='b')
         # plt.show()
-
+        return roi_set
 
 
 ########################################################################################################################
@@ -222,20 +218,27 @@ class PlateSegment(object):
 import PlateRecognize.PlateDetector as PlateDetector
 
 path = 'F:/opencvjpg/'
-name = '48.jpg'
+name = '1014.jpg'
 file_name = path+name
 img = cv2.imread(file_name)
+is_saveGray = False
 
 @test.timeit
 def main():
     det = PlateDetector.PlateDetector()
     img_mat = det.getPlateRegion(img)
-    img_out = det.plateCorrect(img_mat)
+    img_out_bin, img_out_gray = det.plateCorrect(img_mat)
     seg = PlateSegment(det.getImageNormalizedWidth(), det.getImageNormalizedHeight())
-    for each in img_out:
-        seg.plateSegment(each)
+    for ind, each in enumerate(img_out_bin):
+        roi_set = seg.plateSegment(each, is_saveGray)
+        # for ind_i, each_i in enumerate(roi_set):
+        #     plt.subplot(1, 7, ind_i+1)
+        #     plt.imshow(each_i, cmap ='gray')
+        # plt.show()
 
 
 if __name__ == '__main__':
     cv2.setUseOptimized(True)
+    # while True:
+    #     main()
     main()

@@ -203,13 +203,17 @@ class PlateDetector(object):
 
 
     # @test.timeit
+    # TODO(FesianXu) 需要倾斜角度检测，以判断用何种方法做倾斜矫正。
+    # TODO(Fesianxu) 需要添加旋转矫正车牌的选项。
+    # TODO(Fesianxu) 加入SVM判断是否是车牌
     def plateCorrect(self, img_mat):
         '''
-        :: 矫正车牌，利用三种可能的方法矫正
+        :: 矫正车牌，利用三种可能的方法矫正 判断是否是车牌，通过SVM
         :param img_mat: 未矫正的车牌区域集合
         :return: 判断后，并且矫正过后的车牌集合，数量不一定等于img_mat
         '''
-        img_out = []
+        img_out_bin = []
+        img_out_gray = []
         for img in img_mat:
             img_blue = self.__getBlueRegion(img)
             dilate_core = np.ones((10, 15), np.uint8)
@@ -226,16 +230,17 @@ class PlateDetector(object):
                 # 如果存在车牌
                 # angle = self.__rotateAngle(img_blue)
                 img_correct = self.__projectionCorrect(img, plate_list[0])
-                img_correct = cv2.cvtColor(img_correct, cv2.COLOR_BGR2GRAY)
-                _, img_correct = cv2.threshold(img_correct, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                img_correct_gray = cv2.cvtColor(img_correct, cv2.COLOR_BGR2GRAY)
+                _, img_correct = cv2.threshold(img_correct_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
                 # show(img_correct)
                 if self.__isPlate(img_correct):
                     img_frame = self.__deletePlateFrames(img_correct)
                     # show(img_frame)
                     erode_kernel = np.ones((2, 2))
                     img_frame = cv2.erode(img_frame, erode_kernel)
-                    img_out.append(img_frame)
-        return img_out
+                    img_out_bin.append(img_frame)
+                    img_out_gray.append(img_correct_gray)
+        return img_out_bin, img_out_gray
 
     def getImageNormalizedWidth(self):
         return self.__plate_norm_width
