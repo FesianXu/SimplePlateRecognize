@@ -35,6 +35,10 @@ class PlateDetector(object):
     __plate_wh_least_height = 30  # 车牌至少宽度
     __plate_norm_width = 180  # 车牌标准化长度
     __plate_norm_height = 50  # 车牌标准宽度
+    __img_norm_width = 800  # 图像标准化长度
+    __img_norm_height = 600  # 图像标准化宽度
+    __plate_region_norm_width = 300  # 车牌区域未校准时的标准化长度
+    __plate_region_norm_height = 140  # 车牌区域未校准时的标准化宽度
     __SVM_is_plate_model_path = '../train_data/is_plate/svm_is_plate_model'  # 判断是否是车牌的SVM
 
 
@@ -67,7 +71,7 @@ class PlateDetector(object):
         :param img: 输入图片
         :return: 输出可能的车牌区域
         '''
-        img = ImageManager.normalizeImage(img)
+        img = cv2.resize(img, (self.__img_norm_width, self.__img_norm_height))
         blue = self.__getBlueRegion(img)
         erode_kernel = np.ones((2, 2), np.uint8)
         dilate_kernel = np.ones((8, 18), np.uint8)
@@ -81,7 +85,7 @@ class PlateDetector(object):
                 max_row, min_row = max(each[:, :, 1])[0], min(each[:, :, 1])[0]
                 max_col, min_col = max(each[:, :, 0])[0], min(each[:, :, 0])[0]
                 img_tmp = img[min_row:max_row, min_col:max_col, :]
-                img_tmp = ImageManager.normalizePlateRegion(img_tmp)
+                img_tmp = cv2.resize(img_tmp, (self.__plate_region_norm_width, self.__plate_region_norm_height))
                 img_mat.append(img_tmp)
         return img_mat
 

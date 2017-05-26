@@ -36,7 +36,7 @@ class ImageCapture(object):
                 file_name = self.__file_path+each
                 img = cv2.imread(file_name)
                 img_mat.append(img)
-        elif size >= 0 and size <= img_count:
+        elif 0 <= size <= img_count:
             img_rand = random.sample(file_dir, size)
             for each in img_rand:
                 file_name = self.__file_path+each
@@ -64,21 +64,7 @@ def turnBinaryMat(img_mat, max_val=1, thresh=120):
     return bin_mat
 
 
-def normalizeImage(img,width=800, height=600):
-    return cv2.resize(img, (width, height))
-
-
-def normalizePlate(img, width=180, height=50):
-    return cv2.resize(img, (width, height))
-
-
-def normalizePlateRegion(img, width=300, height=140):
-    return cv2.resize(img, (width, height))
-
-
-def gaussian(img, core=(5, 5), sigmaX=2, sigmaY=2):
-    return cv2.GaussianBlur(img, core, sigmaX, sigmaY)
-
+########################################################################################################################
 
 if __name__ == '__main__':
     path = '../../res/trainning_set/normalized/numbers/9/'

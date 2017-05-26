@@ -13,8 +13,6 @@ import test
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import line_profiler
-import sys
 
 class PlateSegment(object):
     '''
@@ -24,6 +22,8 @@ class PlateSegment(object):
     __img_width = 0  # init in __init__
     __img_height = 0  # init in __init__
     __dist_between_chars = (0, 0)  # init in __init__
+    __chars_normalized_width = 32  # 标准化后的字符长度
+    __chars_normalized_height = 64  # 标准化后的字符宽度
     __chars_wh_upper = 5
     __chars_wh_lower = 1.5  # 字符比例
     __chars_area_lower = 50  # 字符最小面积
@@ -87,19 +87,27 @@ class PlateSegment(object):
         return new_type_list, new_centers_list
 
 
-    def __cutTheChars(self, bin_plate, center_set, width_set, height_set):
+    def __cutTheChars(self, plate_img, center_set, width_set, height_set, isgray=False):
         '''
         :: 切割车牌中的字符
+        :param plate_img: 车牌图像，可以是二值图或者灰度图
         :param center_set: 中心位置集合
         :param width_set: 长度集合
         :param height_set: 宽度结合
+        :param isgray: 是否需要保存为灰度图，前提是plate_img是灰度的
         :return: 切割好的字符图片，保存为二值图或者灰度图（灰度图需要援引）
         '''
         roi_set = []
-        for each in center_set:
-            min_row, max_row = int((each[1]-height_set/2)[0]), int((each[1]+height_set/2)[0])
-            min_col, max_col = int((each[0]-width_set/2)[0]), int((each[0]+width_set/2)[0])
-            roi = bin_plate[min_row:max_row, min_col:max_col]
+        for ind, each in enumerate(center_set):
+            height_each, width_each = height_set[ind], width_set[ind]
+            min_row, max_row = int(each[1]-height_each/2), int(each[1]+height_each/2)
+            min_col, max_col = int(each[0]-width_each/2), int(each[0]+width_each/2)
+            roi = plate_img[min_row:max_row, min_col:max_col]
+            roi = cv2.resize(roi, (self.__chars_normalized_width, self.__chars_normalized_height))
+            if isgray:
+                pass
+            else:
+                _, roi = cv2.threshold(roi, 120, 255, cv2.THRESH_BINARY)
             roi_set.append(roi)
         return roi_set
 
@@ -192,7 +200,14 @@ class PlateSegment(object):
         type_list = self.__decideCharsTypes(centers_loc)
         type_list, center_list = self.__mergeDuplicateContours(type_list, centers_loc)
         center_list = self.__getMissingCharsMsgRoughly(type_list, center_list)
-        roi_set = self.__cutTheChars(img, center_list, width_ideal, height_ideal)
+        width_set, height_set = [width_ideal]*7, [height_ideal]*7
+        roi_set = self.__cutTheChars(img, center_list, width_set, height_set)
+        # for ind, each in enumerate(roi_set):
+        #     plt.subplot(1, 7, ind+1)
+        #     plt.imshow(each)
+        # plt.show()
+
+
         # loc = np.array(center_list).reshape(len(center_list), 2)
         # plt.imshow(img)
         # for each in chars_contours:
@@ -207,7 +222,7 @@ class PlateSegment(object):
 import PlateRecognize.PlateDetector as PlateDetector
 
 path = 'F:/opencvjpg/'
-name = '1010.jpg'
+name = '48.jpg'
 file_name = path+name
 img = cv2.imread(file_name)
 
