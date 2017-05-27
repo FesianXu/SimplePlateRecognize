@@ -6,10 +6,9 @@ __date__ = '2017/5/20'
 __version__ = ''
 
 
-import cv2
-import numpy as np
 import time
 import functools
+from svmutil import *
 
 def timeit(func):
     @functools.wraps(func)
@@ -24,33 +23,22 @@ def timeit(func):
 
 
 ########################################################################################################################
+'''
+optimization finished, #iter = 480 迭代次数
+nu = 0.909091 SVC,one-class-SVM,SVR参数
+obj = -108.333321 二次规划的最小值
+rho = -0.166667 决策函数常数项
+nSV = 220 支持向量数
+nBSV = 100 边界上支持向量数
+Total nSV = 220 支持向量总数
+Accuracy = 100% (220/220) (classification) 分类精度
+'''
 
-windowName = 'img'
-coordinate = []
-def mouse_cb(event, x, y, flags, params):
-    if event == cv2.EVENT_LBUTTONDOWN:
-        coordinate.append([x, y])
 
-@timeit
-def correct(after):
-     img_correct = cv2.warpPerspective(img, homograghy, (180, 48))
-     return img_correct
+from PlateRecognize import PlateTrain
+from PlateRecognize import PlateTrain
 
 if __name__ == '__main__':
-    path = 'F:/opencvjpg/41.jpg'
-    img = cv2.imread(path)
-    cv2.namedWindow(windowName)
-    cv2.setMouseCallback(windowName, mouse_cb, [img]) # mouse call back
-    while True:
-        cv2.imshow(windowName, img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-    after = [[0, 0], [180, 0], [0, 48], [180, 48]]
-    after = np.array(after, np.float32)
-    coordinate = np.array(coordinate, np.float32)
-    homograghy = cv2.getPerspectiveTransform(coordinate, after)
-    print(homograghy)
-    img_correct = correct(after)
-    cv2.imshow('new', img_correct)
-    cv2.waitKey(-1)
-    cv2.destroyAllWindows()
+   pt = PlateTrain.PlateTrain()
+   pt.train_isPlateRegion(True)
+
