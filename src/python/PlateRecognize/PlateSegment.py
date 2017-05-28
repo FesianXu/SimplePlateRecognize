@@ -216,19 +216,18 @@ class PlateSegment(object):
 ########################################################################################################################
 
 import PlateRecognize.PlateDetector as PlateDetector
-
 path = 'F:/opencvjpg/'
-name = '1014.jpg'
+name = '41.jpg'
 file_name = path+name
 img = cv2.imread(file_name)
 is_saveGray = False
+det = PlateDetector.PlateDetector()
+seg = PlateSegment(det.getImageNormalizedWidth(), det.getImageNormalizedHeight())
 
 @test.timeit
 def main():
-    det = PlateDetector.PlateDetector()
     img_mat = det.getPlateRegion(img)
     img_out_bin, img_out_gray = det.plateCorrect(img_mat)
-    seg = PlateSegment(det.getImageNormalizedWidth(), det.getImageNormalizedHeight())
     for ind, each in enumerate(img_out_bin):
         roi_set = seg.plateSegment(each, is_saveGray)
         # for ind_i, each_i in enumerate(roi_set):
@@ -239,6 +238,5 @@ def main():
 
 if __name__ == '__main__':
     cv2.setUseOptimized(True)
-    # while True:
-    #     main()
-    main()
+    while True:
+        main()

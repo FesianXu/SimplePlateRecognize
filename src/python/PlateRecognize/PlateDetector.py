@@ -14,7 +14,9 @@ import numpy as np
 import ImageManager
 import test
 import matplotlib.pyplot as plt
+import os
 from sklearn.cluster import KMeans
+from svmutil import *
 
 
 class PlateDetector(object):
@@ -39,14 +41,22 @@ class PlateDetector(object):
     __img_norm_height = 600  # 图像标准化宽度
     __plate_region_norm_width = 300  # 车牌区域未校准时的标准化长度
     __plate_region_norm_height = 140  # 车牌区域未校准时的标准化宽度
-    __SVM_is_plate_model_path = '../train_data/is_plate/svm_is_plate_model'  # 判断是否是车牌的SVM
+    __is_plate_model_save_path = '/src/python/train_data/is_plate/is_plate_svm_model.model'
+    __project_root_path = u''  # 绝对项目路径
+    __isSet = False  # 是否已经设置了绝对项目路径
+    __is_plate_svm_model = None  # 判断是否是车牌的svm模型
 
 
     def __init__(self):
         '''
         :: 加载SVM模型，用于判断是否是车牌
         '''
-        pass
+        if self.__isSet is not True:
+            BASE_DIR = self.__project_root_path = os.path.dirname(__file__)
+            self.__project_root_path = os.path.dirname(os.path.dirname(os.path.dirname(BASE_DIR)))
+            self.__is_plate_model_save_path = self.__project_root_path+self.__is_plate_model_save_path
+            self.__is_plate_svm_model = svm_load_model(self.__is_plate_model_save_path)
+        self.__isSet = True
 
 
     def __getBlueRegion(self, img):
@@ -111,6 +121,7 @@ class PlateDetector(object):
 
 
     # @test.timeit
+    # TODO(FesianXu) 这里的kmeans可以考虑优化为简单聚类即可
     def __getQuadrangleVertices(self, img, hull):
         '''
         :: 得到倾斜车牌的四个顶点，以用于求得单因性矩阵
@@ -171,14 +182,21 @@ class PlateDetector(object):
         else:
             return None
 
-
+    # @test.timeit
     def __isPlate(self, img):
         '''
         :: 判断是否是车牌，利用SVM判断
         :param img: 待测图像二值图
         :return:
         '''
-        return True
+        f = img.reshape(1, 9000).astype(float).tolist()
+        y = [-1]
+        l, a, v = svm_predict(y, f, self.__is_plate_svm_model)
+        print(l)
+        if l[0] == 1.0:
+            return True
+        else:
+            return False
 
 
     # @test.timeit
@@ -205,7 +223,7 @@ class PlateDetector(object):
     # @test.timeit
     # TODO(FesianXu) 需要倾斜角度检测，以判断用何种方法做倾斜矫正。
     # TODO(Fesianxu) 需要添加旋转矫正车牌的选项。
-    # TODO(Fesianxu) 加入SVM判断是否是车牌
+    # TODO(Fesianxu) 加入SVM判断是否是车牌 (completed 2017/5/28)
     def plateCorrect(self, img_mat):
         '''
         :: 矫正车牌，利用三种可能的方法矫正 判断是否是车牌，通过SVM
@@ -232,8 +250,8 @@ class PlateDetector(object):
                 img_correct = self.__projectionCorrect(img, plate_list[0])
                 img_correct_gray = cv2.cvtColor(img_correct, cv2.COLOR_BGR2GRAY)
                 _, img_correct = cv2.threshold(img_correct_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-                # show(img_correct)
-                if self.__isPlate(img_correct):
+                show(img_correct)
+                if self.__isPlate(img_correct):  # 通过svm，判断是否是车牌
                     img_frame = self.__deletePlateFrames(img_correct)
                     # show(img_frame)
                     erode_kernel = np.ones((2, 2))

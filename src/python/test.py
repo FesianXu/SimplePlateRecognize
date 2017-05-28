@@ -34,11 +34,21 @@ Total nSV = 220 支持向量总数
 Accuracy = 100% (220/220) (classification) 分类精度
 '''
 
-
 from PlateRecognize import PlateTrain
-from PlateRecognize import PlateTrain
+import cv2
+import numpy as np
 
 if __name__ == '__main__':
    pt = PlateTrain.PlateTrain()
-   pt.train_isPlateRegion(True)
+   # pt.train_isPlateRegion(False, True)
+   m = pt.load_isPlate_svm_model()
+   path = 'C:/2.jpg'
+   img = cv2.imread(path, 0)
+   _, img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+   f = img.reshape(1, 9000).astype(float).tolist()
+   y = [1]
+   l, a, v = svm_predict(y, f, m)
+   print(l[0])
+   print(a)
+   print(v)
 
