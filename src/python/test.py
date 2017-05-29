@@ -40,15 +40,15 @@ import numpy as np
 
 if __name__ == '__main__':
    pt = PlateTrain.PlateTrain()
-   # pt.train_isPlateRegion(False, True)
-   m = pt.load_isPlate_svm_model()
-   path = 'C:/2.jpg'
-   img = cv2.imread(path, 0)
-   _, img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-   f = img.reshape(1, 9000).astype(float).tolist()
-   y = [1]
-   l, a, v = svm_predict(y, f, m)
-   print(l[0])
-   print(a)
-   print(v)
+   pt.train_isPlateRegion(False, True)
+   # m = pt.load_isPlate_svm_model()
+   # path = 'C:/test/82.png'
+   # img = cv2.imread(path, 0)
+   # _, img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+   # f = img.reshape(1, 9000).astype(float).tolist()
+   # y = [1]
+   # l, a, v = svm_predict(y, f, m)
+   # print(l[0])
+   # print(a)
+   # print(v)
 

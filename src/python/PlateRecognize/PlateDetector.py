@@ -182,17 +182,18 @@ class PlateDetector(object):
         else:
             return None
 
+
     # @test.timeit
     def __isPlate(self, img):
         '''
         :: 判断是否是车牌，利用SVM判断
+        :: 实际应用中因为采用的分类方法不好，效果不好 accuracy=62%
         :param img: 待测图像二值图
         :return:
         '''
-        f = img.reshape(1, 9000).astype(float).tolist()
-        y = [-1]
+        f = img.reshape(1, img.size).astype(float).tolist()
+        y = [1]
         l, a, v = svm_predict(y, f, self.__is_plate_svm_model)
-        print(l)
         if l[0] == 1.0:
             return True
         else:
@@ -249,8 +250,7 @@ class PlateDetector(object):
                 # angle = self.__rotateAngle(img_blue)
                 img_correct = self.__projectionCorrect(img, plate_list[0])
                 img_correct_gray = cv2.cvtColor(img_correct, cv2.COLOR_BGR2GRAY)
-                _, img_correct = cv2.threshold(img_correct_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-                show(img_correct)
+                _, img_correct = cv2.threshold(img_correct_gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
                 if self.__isPlate(img_correct):  # 通过svm，判断是否是车牌
                     img_frame = self.__deletePlateFrames(img_correct)
                     # show(img_frame)

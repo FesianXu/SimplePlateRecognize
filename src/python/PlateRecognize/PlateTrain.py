@@ -33,9 +33,11 @@ class PlateTrain(object):
         self.__isSet = True
 
 
+    # TODO(FesianXu) 改进其效果，目前交叉检验只有62%的精确度
     def train_isPlateRegion(self, isSaveRaw=False, isSaveModel=True):
         '''
         :: 判断是否是车牌区域的SVM模型
+        :: 目前效果不好
         :param isSaveRaw: 是否要保存原始的特征数据
         :param isSaveModel: 是否要保存训练好的svm model
         :return: svm model

@@ -42,7 +42,7 @@ class FeatureExtraction(object):
             self.__is_plate_label_mat = self.__project_root_path+self.__is_plate_label_mat
         self.__isSet = True
 
-    @test.timeit
+
     def getPlateFeature(self, path):
         '''
         :: 获得车牌区域的特征矩阵
@@ -57,6 +57,7 @@ class FeatureExtraction(object):
             img = cv2.resize(img, (self.__plate_norm_width, self.__plate_norm_height))
             _, img = cv2.threshold(img, 120, self.__max_BinImage, cv2.THRESH_BINARY)
             feature = img.reshape(1, img.size).astype(float).tolist()[0]
+
             feature_mat.append(feature)
         return feature_mat
 

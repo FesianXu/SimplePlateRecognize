@@ -238,5 +238,4 @@ def main():
 
 if __name__ == '__main__':
     cv2.setUseOptimized(True)
-    while True:
-        main()
+    main()
