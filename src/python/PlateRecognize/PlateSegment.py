@@ -145,7 +145,6 @@ class PlateSegment(object):
                         new_center_list[each-1] = (center_list[min_ind-1][0]+min_v*self.__dist_between_chars[1], avg_rows_centers)
                 else:  # 左侧
                     new_center_list[each-1] = (center_list[min_ind-1][0]-min_v*self.__dist_between_chars[1], avg_rows_centers)
-            pass
         return new_center_list
 
 
@@ -155,6 +154,11 @@ class PlateSegment(object):
 
     # @test.timeit
     def __getCharsBoxingMsg(self, real_contours):
+        '''
+        :: 从真实字符轮廓中得到字符box的信息
+        :param real_contours: 真实字符轮廓
+        :return: 字符box信息，包括中心点list， 理想长度， 理想宽度
+        '''
         centers_loc = []
         width_set = []
         height_set = []
@@ -203,9 +207,8 @@ class PlateSegment(object):
             roi_set = self.__cutTheChars(gray_img, center_list, width_set, height_set, isGray)
         else:
             roi_set = self.__cutTheChars(img, center_list, width_set, height_set, isGray)
-
-        # loc = np.array(center_list).reshape(len(center_list), 2)
-        # plt.imshow(img)
+        loc = np.array(center_list).reshape(len(center_list), 2)
+        # plt.imshow(img,cmap ='gray')
         # for each in chars_contours:
         #     plt.scatter(each[:,:,0], each[:,:,1], color='r')
         # plt.scatter(loc[:,0], loc[:,1], color='b')
@@ -216,8 +219,8 @@ class PlateSegment(object):
 ########################################################################################################################
 
 import PlateRecognize.PlateDetector as PlateDetector
-path = 'F:/opencvjpg/'
-name = '41.jpg'
+path = 'F:/opencvjpg/test_img/'
+name = '10000.jpg'
 file_name = path+name
 img = cv2.imread(file_name)
 is_saveGray = False

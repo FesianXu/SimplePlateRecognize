@@ -10,8 +10,8 @@ norset_path = '..\..\res\trainning_set\normalized\' ;
 auto_samples_path = '..\..\res\auto_samples_set\' ;
 nor_width = 32 ;
 nor_heigth = 64 ;
-isclear = 'no' ;
-isnormalize = 'no' ;
+isclear = 'yes' ;
+isnormalize = 'yes' ;
 isclear_auto_samples = 'no' ;
 
 alp_raw = dir([rawset_path,'alphabet\']) ;

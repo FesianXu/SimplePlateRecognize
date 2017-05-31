@@ -13,7 +13,7 @@ import cv2
 import os
 import numpy as np
 from svmutil import *
-import test
+from sklearn.decomposition import PCA
 
 class FeatureExtraction(object):
     '''
@@ -51,14 +51,15 @@ class FeatureExtraction(object):
         '''
         dir_list = os.listdir(path)
         feature_mat = []
+        pca = PCA(n_components=1000)
         for ind, each_img in enumerate(dir_list):
             file_name = path+each_img
             img = cv2.imdecode(np.fromfile(file_name, dtype=np.uint8), 0)  # flag = 0 means that return a grayscale image immediately
             img = cv2.resize(img, (self.__plate_norm_width, self.__plate_norm_height))
             _, img = cv2.threshold(img, 120, self.__max_BinImage, cv2.THRESH_BINARY)
             feature = img.reshape(1, img.size).astype(float).tolist()[0]
-
             feature_mat.append(feature)
+        # f_pca = pca.fit_transform(feature_mat)
         return feature_mat
 
 
