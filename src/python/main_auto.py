@@ -5,6 +5,10 @@ __author__ = 'FesianXu'
 __date__ = '2017/6/1'
 __version__ = 'version 0.1'
 
+'''
+自动运行脚本，对一个文件夹内所有文件进行处理
+'''
+
 
 import os
 import time
@@ -15,7 +19,7 @@ import PlateRecognize.logger as logger
 root_path = 'F:/opencvjpg/new_plate_img/'
 save_plate_path = ''
 
-lg = logger.PlateLogger()
+lg = logger.PlateLogger(isRecord=False)
 
 if __name__ == '__main__':
     dirlist = os.listdir(root_path)
@@ -28,7 +32,7 @@ if __name__ == '__main__':
     lg.log_time()
     lg.log_img_folder(root_path)
     lg.log_platform()
-    for each in dirlist:
+    for each in dirlist[:30]:
         file_name = root_path+each
         img = cv2.imread(file_name)
         try:
