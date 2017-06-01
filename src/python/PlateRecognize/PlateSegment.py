@@ -9,11 +9,10 @@ __version__ = 'version 0.1'
 将矫正好的车牌进行字符分割
 '''
 
-# import test
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import PlateRecognize.CharsPredict as CharsPredict
+
 
 class PlateSegment(object):
     '''
@@ -234,7 +233,7 @@ def main():
     img_out_bin, img_out_gray = det.plateCorrect(img_mat)
     for ind, each in enumerate(img_out_bin):
         roi_set = seg.plateSegment(each, is_saveGray)
-        res = CharsPredict.predict_chars(roi_set)
+        # res = CharsPredict.predict_chars(roi_set)
 
         # for ind_i, each_i in enumerate(roi_set):
         #     plt.subplot(1, 7, ind_i+1)

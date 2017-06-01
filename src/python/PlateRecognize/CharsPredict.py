@@ -3,7 +3,7 @@
 
 __author__ = 'FesianXu'
 __date__ = '2017/6/1'
-__version__ = ''
+__version__ = 'version 0.1'
 
 import cv2
 import tensorflow as tf
@@ -125,7 +125,6 @@ def close_sess():
 
 if __name__ == '__main__':
     img1 = cv2.imread('C:/1.jpg', -1)
-
 
     img_list = [img1, img1, img1, img1, img1, img1, img1]
 

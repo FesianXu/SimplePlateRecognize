@@ -1,0 +1,133 @@
+-----------------------------------------------------------
+Author: FesianXu 
+Version: version 0.1 
+Coding Date: 2017/5/23 
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  current date = 2017-06-01 
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  current time = 19:55:14  
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  Recognize the plates in folder = F:/opencvjpg/test_img/ 
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  Run in platform = Python 3.5 in Anaconda, with TensorFlow, LibSVM, scikit-learn, opencv-python 
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว    The costing time = 30.212913 seconds, with processing 100 images 
+      Each images takes 0.302129 seconds average 
+      Valid images takes 0.382442 seconds average 
+      Valid images counts = 79 
+      Invalid images counts = 21 
+      Total Image counts = 100 
+      Valid Proportion: 0.790000 
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  The name list of successful plates recognition: 
+No.0            1.JPG  
+No.1            10.JPG  
+No.2            100.jpg  
+No.3            10000.JPG  
+No.4            1008.jpg  
+No.5            1009.jpg  
+No.6            11.JPG  
+No.7            12.JPG  
+No.8            13.JPG  
+No.9            14.JPG  
+No.10            16.JPG  
+No.11            17.jpg  
+No.12            18.JPG  
+No.13            2.JPG  
+No.14            20.JPG  
+No.15            21.JPG  
+No.16            22.jpg  
+No.17            24.JPG  
+No.18            25.JPG  
+No.19            26.JPG  
+No.20            27.JPG  
+No.21            29.JPG  
+No.22            30.JPG  
+No.23            32.JPG  
+No.24            33.JPG  
+No.25            35.JPG  
+No.26            36.JPG  
+No.27            37.JPG  
+No.28            38.JPG  
+No.29            39.JPG  
+No.30            4.JPG  
+No.31            40.JPG  
+No.32            42.JPG  
+No.33            43.JPG  
+No.34            44.JPG  
+No.35            45.JPG  
+No.36            46.JPG  
+No.37            47.JPG  
+No.38            49.JPG  
+No.39            5.JPG  
+No.40            51.JPG  
+No.41            52.jpg  
+No.42            53.jpg  
+No.43            54.jpg  
+No.44            55.jpg  
+No.45            56.jpg  
+No.46            57.jpg  
+No.47            58.jpg  
+No.48            59.jpg  
+No.49            60.jpg  
+No.50            61.jpg  
+No.51            62.jpg  
+No.52            63.jpg  
+No.53            64.jpg  
+No.54            65.jpg  
+No.55            66.jpg  
+No.56            67.jpg  
+No.57            68.jpg  
+No.58            69.jpg  
+No.59            71.jpg  
+No.60            72.jpg  
+No.61            73.jpg  
+No.62            8.JPG  
+No.63            80.jpg  
+No.64            81.jpg  
+No.65            82.jpg  
+No.66            83.jpg  
+No.67            84.jpg  
+No.68            88.jpg  
+No.69            89.jpg  
+No.70            9.JPG  
+No.71            91.jpg  
+No.72            92.jpg  
+No.73            93.jpg  
+No.74            94.jpg  
+No.75            95.jpg  
+No.76            96.jpg  
+No.77            97.jpg  
+No.78            98.jpg  
+-----------------------------------------------------------
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  The name list of failing plates recognition: 
+No.0            15.JPG   
+No.1            19.JPG   
+No.2            23.jpg   
+No.3            28.JPG   
+No.4            31.JPG   
+No.5            34.JPG   
+No.6            41.jpg   
+No.7            48.JPG   
+No.8            50.JPG   
+No.9            6.JPG   
+No.10            7.JPG   
+No.11            70.jpg   
+No.12            74.jpg   
+No.13            75.jpg   
+No.14            76.jpg   
+No.15            77.jpg   
+No.16            78.jpg   
+No.17            79.jpg   
+No.18            85.jpg   
+No.19            86.jpg   
+No.20            87.jpg   
+-----------------------------------------------------------

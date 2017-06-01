@@ -11,10 +11,10 @@ PlateDetector, use to detect the plate frame location in an image
 
 import cv2
 import numpy as np
-import ImageManager
-import test
-import matplotlib.pyplot as plt
 import os
+
+import matplotlib.pyplot as plt
+
 from sklearn.cluster import KMeans
 from svmutil import *
 
@@ -276,7 +276,7 @@ def show(img):
     cv2.waitKey(-1)
 
 
-@test.timeit
+# @test.timeit
 def main():
 
     path = 'F:/opencvjpg/'
