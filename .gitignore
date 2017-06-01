@@ -15,3 +15,5 @@
 # 保存源代码
 
 # gitignore的二层目录似乎会出现问题
+
+/src/python/train_data/predict_chars/

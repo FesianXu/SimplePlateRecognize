@@ -35,11 +35,11 @@ class PlateTrain(object):
     __project_root_path = u''  # 绝对项目路径
     __isSet = False  # 是否已经设置了绝对项目路径
     __n_classes = 34  # 包括字母和数字
-    __n_input = 32*64
-    __out_loop_limits = 1
-    __train_inner_times = 1
+    __n_input = 32*64  # 展开后的图片尺寸
+    __out_loop_limits = 35  # 一层外部学习递归数
+    __train_inner_times = 10  # 二层内部学习递归数
     __cnn_dropout = 0.75
-    __learning_rate = 0.001
+    __learning_rate = 0.002  # 梯度下降学习率
     isplate_svm = FeatureExtraction.FeatureExtraction()
 
     def __init__(self):
@@ -48,6 +48,7 @@ class PlateTrain(object):
             self.__project_root_path = os.path.dirname(os.path.dirname(os.path.dirname(BASE_DIR)))
             self.__is_plate_model_save_path = self.__project_root_path+self.__is_plate_model_save_path
             self.__predict_char_model_save_path = self.__project_root_path+self.__predict_char_model_save_path
+            self.__predict_char_model_save_path = self.__predict_char_model_save_path.encode('gbk')
             self.__number_samples_mat_path = self.__project_root_path+self.__number_samples_mat_path
             self.__alphabet_samples_mat_path = self.__project_root_path+self.__alphabet_samples_mat_path
             self.__number_each_path = [self.__number_samples_mat_path+x+'/' for x in os.listdir(self.__number_samples_mat_path)]
@@ -107,6 +108,13 @@ class PlateTrain(object):
         return list_mat
 
     def __getFoldersImages(self, root_path, path_list, batch_size):
+        '''
+        :: 从文件夹里面提取图片集合，注意是随机提取batch_size个
+        :param root_path: 文件夹集合的根目录，其下有多个文件夹，每个文件夹里面都有图片
+        :param path_list: 需要提取的图片名字
+        :param batch_size: 需要提取的图片大小
+        :return:
+        '''
         if batch_size < 0:
             dirlist = path_list
             batch_size = len(path_list)
@@ -139,7 +147,7 @@ class PlateTrain(object):
 
 
     def train_predict_chars(self):
-        __fc_inner_cell = 1024
+        __fc_inner_cell = 1024  # 全连接层的隐藏层神经元大小
         # Store layers weight & bias
         weights = {
             # 5x5 conv, 1 input, 32 outputs
@@ -212,23 +220,28 @@ class PlateTrain(object):
         print('begin to train CNN')
         time_train_begin = time.clock()
         with tf.Session() as sess:
-            sess.run(init)
-
-            for i in range(self.__out_loop_limits):
-                avg_cost = 0
-                for j in range(self.__train_inner_times):
-                    train_x, train_y = self.__getSamplesMat(1, 100)
-                    sess.run(optimizer, feed_dict={x: train_x, y: train_y,
-                                                   keep_prob: self.__cnn_dropout})
-                    if True:
-                        loss, acc = sess.run([cost, accuracy], feed_dict={x: train_x,
-                                                                          y: train_y,
-                                                                          keep_prob: 1.})
-                        print("i = " + str(i)+ '  j = '+str(j)+ ", Minibatch Loss= " + \
-                              "{:.6f}".format(loss) + ", Training Accuracy= " + \
-                              "{:.5f}".format(acc))
-            time_train_end = time.clock()
-            saver_path = saver.save(sess, 'G:\cnn_model\predict_chars_cnn_model.ckpt')
+            ##########################################trainning part####################################################
+            # sess.run(init)
+            #
+            # for i in range(self.__out_loop_limits):
+            #     avg_cost = 0
+            #     for j in range(self.__train_inner_times):
+            #         train_x, train_y = self.__getSamplesMat(1, 100)
+            #         sess.run(optimizer, feed_dict={x: train_x, y: train_y,
+            #                                        keep_prob: self.__cnn_dropout})
+            #         if True:
+            #             loss, acc = sess.run([cost, accuracy], feed_dict={x: train_x,
+            #                                                               y: train_y,
+            #                                                               keep_prob: 1.})
+            #             print("i = " + str(i)+ '  j = '+str(j)+ ", Minibatch Loss= " + \
+            #                   "{:.6f}".format(loss) + ", Training Accuracy= " + \
+            #                   "{:.5f}".format(acc))
+            # time_train_end = time.clock()
+            # saver_path = saver.save(sess, self.__predict_char_model_save_path)
+            ##########################################trainning part####################################################
+            time_load_begin = time.clock()
+            saver.restore(sess, self.__predict_char_model_save_path)
+            time_load_end = time.clock()
             print("Optimization Finished!")
             test_x, test_y = self.__getSamplesMat(0, 50)
             time_test_begin = time.clock()
@@ -237,8 +250,9 @@ class PlateTrain(object):
                                                       y: test_y,
                                                       keep_prob: 1.}))
             time_test_end = time.clock()
-            print('train time cost = ', time_train_end-time_train_begin)
+            # print('train time cost = ', time_train_end-time_train_begin)
             print('test time cost = ', time_test_end-time_test_begin)
+            print('load time', time_load_end-time_load_begin)
 
 
 ########################################################################################################################

@@ -17,7 +17,7 @@
     <SUITE FILE_PATH="coverage/python$FeatureExtraction.coverage" NAME="FeatureExtraction Coverage Results" MODIFIED="1495971000919" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/PlateRecognize" />
     <SUITE FILE_PATH="coverage/python$training.coverage" NAME="training Coverage Results" MODIFIED="1495898893784" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/PlateRecognize" />
     <SUITE FILE_PATH="coverage/python$test.coverage" NAME="test Coverage Results" MODIFIED="1496244411160" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/python$PlateTrain.coverage" NAME="PlateTrain Coverage Results" MODIFIED="1496252329311" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/PlateRecognize" />
+    <SUITE FILE_PATH="coverage/python$PlateTrain.coverage" NAME="PlateTrain Coverage Results" MODIFIED="1496278136985" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/PlateRecognize" />
     <SUITE FILE_PATH="coverage/python$ImageManager.coverage" NAME="ImageManager Coverage Results" MODIFIED="1495345230382" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/python$PlateSegment.coverage" NAME="PlateSegment Coverage Results" MODIFIED="1496164808759" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/PlateRecognize" />
     <SUITE FILE_PATH="coverage/python$main_script.coverage" NAME="main_script Coverage Results" MODIFIED="1495551333655" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -89,8 +89,8 @@
       <file leaf-file-name="PlateTrain.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/PlateRecognize/PlateTrain.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="5.4073105" vertical-offset="1292" max-vertical-offset="4845">
-              <caret line="177" column="22" selection-start-line="177" selection-start-column="22" selection-end-line="177" selection-end-column="22" />
+            <state vertical-scroll-proportion="0.7432432" vertical-offset="4684" max-vertical-offset="5111">
+              <caret line="261" column="21" selection-start-line="261" selection-start-column="21" selection-end-line="261" selection-end-column="21" />
               <folding>
                 <element signature="e#155#176#0" expanded="true" />
               </folding>
@@ -1040,8 +1040,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/PlateRecognize/PlateTrain.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="5.4073105" vertical-offset="1292" max-vertical-offset="4845">
-          <caret line="177" column="22" selection-start-line="177" selection-start-column="22" selection-end-line="177" selection-end-column="22" />
+        <state vertical-scroll-proportion="0.7432432" vertical-offset="4684" max-vertical-offset="5111">
+          <caret line="261" column="21" selection-start-line="261" selection-start-column="21" selection-end-line="261" selection-end-column="21" />
           <folding>
             <element signature="e#155#176#0" expanded="true" />
           </folding>
