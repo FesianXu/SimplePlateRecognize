@@ -12,6 +12,7 @@ PlateDetector, use to detect the plate frame location in an image
 import cv2
 import numpy as np
 import os
+import math
 
 import matplotlib.pyplot as plt
 
@@ -41,6 +42,9 @@ class PlateDetector(object):
     __img_norm_height = 600  # 图像标准化宽度
     __plate_region_norm_width = 300  # 车牌区域未校准时的标准化长度
     __plate_region_norm_height = 140  # 车牌区域未校准时的标准化宽度
+    __plate_tilt_type1 = -1  # 以下的可以不进行倾斜矫正，无风险
+    __plate_tilt_type2 = 2  # 以下的进行简单的旋转矫正， 风险较小，主要集中在测量角度的精确度上
+    # 其余的进行透视变换矫正，风险最大，主要集中在四点定位准确度上
     __is_plate_model_save_path = '/src/python/train_data/is_plate/is_plate_svm_model.model'
     __project_root_path = u''  # 绝对项目路径
     __isSet = False  # 是否已经设置了绝对项目路径
@@ -100,6 +104,14 @@ class PlateDetector(object):
         return img_mat
 
 
+    def __imrotate(self, img, angle, scale=0.75):
+        width = img.shape[1]
+        height = img.shape[0]
+        rotate_mat = cv2.getRotationMatrix2D((width/2, height/2), angle, scale)
+        rotate_img = cv2.warpAffine(img, rotate_mat, (width, height))
+        return rotate_img
+
+
     def __rotateAngle(self, img):
         '''
         :: 求车牌的倾斜角，以决定矫正方案
@@ -107,17 +119,18 @@ class PlateDetector(object):
         :return: 倾斜角度
         '''
         img_canny = cv2.Canny(img*255, 50, 150)
-        lines = cv2.HoughLinesP(img_canny, 1, np.pi/180, threshold=100)
-
+        lines = cv2.HoughLines(img_canny, 1, np.pi/180, threshold=80)
+        angle_list = []
         if lines is not None:
             for each in lines:
                 theta = each[0, 1]
                 k = -np.cos(theta)/np.sin(theta)
                 angle = round(np.arctan(k)*180/np.pi)
-                print(angle)
+                angle_list.append(angle)
         else:
             return None
-        return 0
+        angle_avg = sum(angle_list)/len(angle_list)
+        return angle_avg
 
 
     # @test.timeit
@@ -193,8 +206,8 @@ class PlateDetector(object):
         '''
         f = img.reshape(1, img.size).astype(float).tolist()
         y = [1]
-        l, a, v = svm_predict(y, f, self.__is_plate_svm_model)
-        if l[0] == 1.0:
+        label, acc, val = svm_predict(y, f, self.__is_plate_svm_model)
+        if label[0] == 1.0:
             return True
         else:
             return False
@@ -220,11 +233,13 @@ class PlateDetector(object):
                 img_out[eachrow, :] = img[eachrow, :]
         return img_out
 
-
+    # import test
+    #
     # @test.timeit
-    # TODO(FesianXu) 需要倾斜角度检测，以判断用何种方法做倾斜矫正。
-    # TODO(Fesianxu) 需要添加旋转矫正车牌的选项。
+    # TODO(FesianXu) 需要倾斜角度检测，以判断用何种方法做倾斜矫正。(complete 2017/6/2)
+    # TODO(Fesianxu) 需要添加旋转矫正车牌的选项。(complete 2017/6/2)
     # TODO(Fesianxu) 加入SVM判断是否是车牌 (completed 2017/5/28)
+    # TODO(FesianXu) 优化旋转矫正
     def plateCorrect(self, img_mat):
         '''
         :: 矫正车牌，利用三种可能的方法矫正 判断是否是车牌，通过SVM
@@ -247,8 +262,36 @@ class PlateDetector(object):
                     plate_list.append(hull)
             if plate_list:
                 # 如果存在车牌
-                # angle = self.__rotateAngle(img_blue)
-                img_correct = self.__projectionCorrect(img, plate_list[0])
+                angle_avg = self.__rotateAngle(img_blue)  # 得到车牌的倾斜程度
+                # print(angle_avg)
+                if angle_avg is None:
+                    continue
+                plate_list_valid = plate_list[0]
+                if abs(angle_avg) <= self.__plate_tilt_type1:  # 不进行矫正，只是标准化图像
+                    max_col, min_col = max(plate_list_valid[:, :, 0])[0], min(plate_list_valid[:, :, 0])[0]
+                    max_row, min_row = max(plate_list_valid[:, :, 1])[0], min(plate_list_valid[:, :, 1])[0]
+                    img_correct = img[min_row:max_row, min_col:max_col, :]
+                    img_correct = cv2.resize(img_correct, (self.__plate_norm_width, self.__plate_norm_height))
+                # elif self.__plate_tilt_type1 < abs(angle_avg) < self.__plate_tilt_type2:  # 进行简单旋转矫正
+                #     img_correct = self.__imrotate(img, angle_avg)
+                #     img_correct_blue = self.__getBlueRegion(img_correct)
+                #     dilate_kernel = np.ones((10, 15), np.uint8)
+                #     img_correct_blue = cv2.dilate(img_correct_blue, dilate_kernel)
+                #     _, img_correct_contours, _ = cv2.findContours(img_correct_blue, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                #     img_correct_list = []
+                #     for each_blue in img_correct_contours:
+                #         dcol, drow = max(each_blue[:, :, 0])-min(each_blue[:, :, 0]), max(each_blue[:, :, 1])-min(each_blue[:, :, 1])
+                #         if self.__plate_wh_lower <= dcol/(drow+0.0001) <= self.__plate_wh_upper and dcol >= self.__plate_wh_least_width \
+                #                 and drow >= self.__plate_wh_least_height:
+                #             img_correct_list.append(each_blue)
+                #     valid_blue = img_correct_list[0]
+                #     max_col, min_col = max(valid_blue[:, :, 0])[0], min(valid_blue[:, :, 0])[0]
+                #     max_row, min_row = max(valid_blue[:, :, 1])[0], min(valid_blue[:, :, 1])[0]
+                #     img_correct = img_correct[min_row:max_row, min_col:max_col, :]
+                #     img_correct = cv2.resize(img_correct, (self.__plate_norm_width, self.__plate_norm_height))
+                else:
+                    img_correct = self.__projectionCorrect(img, plate_list_valid)
+
                 img_correct_gray = cv2.cvtColor(img_correct, cv2.COLOR_BGR2GRAY)
                 _, img_correct = cv2.threshold(img_correct_gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
                 if self.__isPlate(img_correct):  # 通过svm，判断是否是车牌

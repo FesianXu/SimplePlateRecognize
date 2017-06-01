@@ -1,0 +1,358 @@
+-----------------------------------------------------------
+Author: FesianXu 
+Version: version 0.1 
+Coding Date: 2017/5/23 
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  current date = 2017-06-02 
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  current time = 01:46:00  
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  Recognize the plates in folder = F:/opencvjpg/new_plate_img/ 
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  Run in platform = Python 3.5 in Anaconda, with TensorFlow, LibSVM, scikit-learn, opencv-python 
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว    The costing time = 66.225093 seconds, with processing 325 images 
+      Each images takes 0.203770 seconds average 
+      Valid images takes 0.316866 seconds average 
+      Valid images counts = 209 
+      Invalid images counts = 116 
+      Total Image counts = 325 
+      Valid Proportion: 0.643077 
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  The name list of successful plates recognition: 
+No.0            1.JPG  
+No.1            10 (2).JPG  
+No.2            10.JPG  
+No.3            100.jpg  
+No.4            10000.JPG  
+No.5            1006.JPG  
+No.6            1007.JPG  
+No.7            1008 (2).jpg  
+No.8            1008.jpg  
+No.9            1009 (2).jpg  
+No.10            1009.jpg  
+No.11            101.jpg  
+No.12            1010.jpg  
+No.13            1013.JPG  
+No.14            1014.jpg  
+No.15            1015.jpg  
+No.16            1016.jpg  
+No.17            1017.JPG  
+No.18            1018.JPG  
+No.19            1021.jpg  
+No.20            1023.jpg  
+No.21            1024.jpg  
+No.22            1025.jpg  
+No.23            1026.jpg  
+No.24            1027.JPG  
+No.25            1028.JPG  
+No.26            1029.jpg  
+No.27            1031.JPG  
+No.28            1035.JPG  
+No.29            1036.JPG  
+No.30            1041.JPG  
+No.31            1043.JPG  
+No.32            1065.jpg  
+No.33            1067.jpg  
+No.34            1068.jpg  
+No.35            1069.jpg  
+No.36            1071.jpg  
+No.37            1073.jpg  
+No.38            1076.jpg  
+No.39            1077.jpg  
+No.40            1078.jpg  
+No.41            1079.jpg  
+No.42            1080.jpg  
+No.43            1082.jpg  
+No.44            1083.jpg  
+No.45            1084.jpg  
+No.46            1087.jpg  
+No.47            1088.jpg  
+No.48            1089.jpg  
+No.49            1090.jpg  
+No.50            1091.jpg  
+No.51            1093.jpg  
+No.52            1094.jpg  
+No.53            1097.jpg  
+No.54            1099.jpg  
+No.55            11.JPG  
+No.56            1101.jpg  
+No.57            1102.jpg  
+No.58            1103.jpg  
+No.59            1104.jpg  
+No.60            1107.jpg  
+No.61            1108.jpg  
+No.62            1109.jpg  
+No.63            1111.jpg  
+No.64            1116.jpg  
+No.65            1117.jpg  
+No.66            1130.jpg  
+No.67            1131.jpg  
+No.68            1141.jpg  
+No.69            1142.jpg  
+No.70            1145.jpg  
+No.71            1148.jpg  
+No.72            1150.jpg  
+No.73            1151.jpg  
+No.74            1152.jpg  
+No.75            1155.jpg  
+No.76            1156.jpg  
+No.77            1160.jpg  
+No.78            1161.jpg  
+No.79            1172.jpg  
+No.80            1174.jpg  
+No.81            1183.jpg  
+No.82            1184.jpg  
+No.83            1190.jpg  
+No.84            1192.jpg  
+No.85            1194.jpg  
+No.86            1195.jpg  
+No.87            1196.jpg  
+No.88            1197.jpg  
+No.89            1198.jpg  
+No.90            1199.jpg  
+No.91            12.jpg  
+No.92            1200.jpg  
+No.93            1201.jpg  
+No.94            1204.jpg  
+No.95            13 (2).JPG  
+No.96            13.jpg  
+No.97            14 (2).JPG  
+No.98            14.jpg  
+No.99            16 (2).JPG  
+No.100            17 (2).jpg  
+No.101            17.jpg  
+No.102            18.jpg  
+No.103            2.JPG  
+No.104            20 (2).JPG  
+No.105            20.jpg  
+No.106            21 (2).JPG  
+No.107            21.jpg  
+No.108            22 (2).jpg  
+No.109            23.jpg  
+No.110            25 (2).JPG  
+No.111            25.jpg  
+No.112            26 (2).JPG  
+No.113            26.jpg  
+No.114            27 (2).JPG  
+No.115            29 (2).JPG  
+No.116            30 (2).JPG  
+No.117            31.jpg  
+No.118            32 (2).JPG  
+No.119            32.jpg  
+No.120            33.JPG  
+No.121            34.jpg  
+No.122            35 (2).JPG  
+No.123            36 (2).JPG  
+No.124            37 (2).JPG  
+No.125            37.jpg  
+No.126            38 (2).JPG  
+No.127            39.JPG  
+No.128            4 (2).JPG  
+No.129            40 (2).JPG  
+No.130            40.jpg  
+No.131            41.jpg  
+No.132            42.JPG  
+No.133            43.JPG  
+No.134            44 (2).JPG  
+No.135            44.jpg  
+No.136            45 (2).JPG  
+No.137            46 (2).JPG  
+No.138            47 (2).JPG  
+No.139            47.jpg  
+No.140            49 (2).JPG  
+No.141            49.jpg  
+No.142            5 (2).JPG  
+No.143            51 (2).JPG  
+No.144            52 (2).jpg  
+No.145            52.jpg  
+No.146            53 (2).jpg  
+No.147            53.jpg  
+No.148            54 (2).jpg  
+No.149            54.jpg  
+No.150            55 (2).jpg  
+No.151            55.jpg  
+No.152            56.jpg  
+No.153            57 (2).jpg  
+No.154            57.jpg  
+No.155            58 (2).jpg  
+No.156            58.jpg  
+No.157            59 (2).jpg  
+No.158            59.jpg  
+No.159            60.jpg  
+No.160            61 (2).jpg  
+No.161            62 (2).jpg  
+No.162            62.jpg  
+No.163            63 (2).jpg  
+No.164            63.jpg  
+No.165            64 (2).jpg  
+No.166            64.jpg  
+No.167            65 (2).jpg  
+No.168            66 (2).jpg  
+No.169            66.jpg  
+No.170            67 (2).jpg  
+No.171            67.jpg  
+No.172            68 (2).jpg  
+No.173            68.jpg  
+No.174            69 (2).jpg  
+No.175            7.JPG  
+No.176            70.jpg  
+No.177            71 (2).jpg  
+No.178            72 (2).jpg  
+No.179            72.jpg  
+No.180            73 (2).jpg  
+No.181            74.jpg  
+No.182            78 (2).jpg  
+No.183            8.JPG  
+No.184            80 (2).jpg  
+No.185            80.jpg  
+No.186            81 (2).jpg  
+No.187            82 (2).jpg  
+No.188            82.jpg  
+No.189            83 (2).jpg  
+No.190            83.jpg  
+No.191            84 (2).jpg  
+No.192            85.jpg  
+No.193            87.jpg  
+No.194            88 (2).jpg  
+No.195            88.jpg  
+No.196            89 (2).jpg  
+No.197            9.JPG  
+No.198            91 (2).jpg  
+No.199            91.jpg  
+No.200            92 (2).jpg  
+No.201            92.jpg  
+No.202            93 (2).jpg  
+No.203            93.jpg  
+No.204            94 (2).jpg  
+No.205            95.jpg  
+No.206            96.jpg  
+No.207            97.jpg  
+No.208            98.jpg  
+-----------------------------------------------------------
+-----------------------------------------------------------
+-----------------------------------------------------------
+กว  The name list of failing plates recognition: 
+No.0            100 (2).jpg   
+No.1            1000.jpg   
+No.2            1001.jpg   
+No.3            1011.jpg   
+No.4            1020.JPG   
+No.5            1030.JPG   
+No.6            1040.jpg   
+No.7            1045.JPG   
+No.8            1070.jpg   
+No.9            1072.jpg   
+No.10            1074.jpg   
+No.11            1075.jpg   
+No.12            1081.jpg   
+No.13            1085.jpg   
+No.14            1086.jpg   
+No.15            1092.jpg   
+No.16            1095.jpg   
+No.17            1096.jpg   
+No.18            1098.jpg   
+No.19            1100.jpg   
+No.20            1105.jpg   
+No.21            1106.jpg   
+No.22            1110.jpg   
+No.23            1112.jpg   
+No.24            1113.jpg   
+No.25            1114.jpg   
+No.26            1115.jpg   
+No.27            1118.jpg   
+No.28            1119.jpg   
+No.29            1120.jpg   
+No.30            1140.jpg   
+No.31            1143.jpg   
+No.32            1144.jpg   
+No.33            1146.jpg   
+No.34            1147.jpg   
+No.35            1153.jpg   
+No.36            1154.jpg   
+No.37            1157.jpg   
+No.38            1158.jpg   
+No.39            1159.jpg   
+No.40            1162.jpg   
+No.41            1173.jpg   
+No.42            1175.jpg   
+No.43            1176.jpg   
+No.44            1177.jpg   
+No.45            1178.jpg   
+No.46            1179.jpg   
+No.47            1180.jpg   
+No.48            1181.jpg   
+No.49            1182.jpg   
+No.50            1185.jpg   
+No.51            1186.jpg   
+No.52            1187.jpg   
+No.53            1191.jpg   
+No.54            1193.jpg   
+No.55            12 (2).JPG   
+No.56            1202.jpg   
+No.57            1203.jpg   
+No.58            1205.jpg   
+No.59            15 (2).JPG   
+No.60            15.jpg   
+No.61            16.jpg   
+No.62            18 (2).JPG   
+No.63            19 (2).JPG   
+No.64            19.jpg   
+No.65            22.jpg   
+No.66            23 (2).jpg   
+No.67            24.JPG   
+No.68            27.jpg   
+No.69            28 (2).JPG   
+No.70            28.jpg   
+No.71            29.jpg   
+No.72            30.jpg   
+No.73            31 (2).JPG   
+No.74            34 (2).JPG   
+No.75            35.jpg   
+No.76            36.jpg   
+No.77            38.jpg   
+No.78            4.jpg   
+No.79            41 (2).jpg   
+No.80            45.jpg   
+No.81            46.jpg   
+No.82            48 (2).JPG   
+No.83            48.jpg   
+No.84            5.jpg   
+No.85            50 (2).JPG   
+No.86            50.jpg   
+No.87            51.jpg   
+No.88            56 (2).jpg   
+No.89            6.JPG   
+No.90            60 (2).jpg   
+No.91            61.jpg   
+No.92            65.jpg   
+No.93            69.jpg   
+No.94            70 (2).jpg   
+No.95            71.jpg   
+No.96            73.jpg   
+No.97            74 (2).jpg   
+No.98            75 (2).jpg   
+No.99            75.jpg   
+No.100            76 (2).jpg   
+No.101            76.jpg   
+No.102            77 (2).jpg   
+No.103            77.jpg   
+No.104            78.jpg   
+No.105            79 (2).jpg   
+No.106            79.jpg   
+No.107            81.jpg   
+No.108            84.jpg   
+No.109            85 (2).jpg   
+No.110            86 (2).jpg   
+No.111            86.jpg   
+No.112            87 (2).jpg   
+No.113            89.jpg   
+No.114            90.jpg   
+No.115            94.jpg   
+-----------------------------------------------------------

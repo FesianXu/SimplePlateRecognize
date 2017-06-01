@@ -19,7 +19,7 @@ import PlateRecognize.logger as logger
 root_path = 'F:/opencvjpg/new_plate_img/'
 save_plate_path = ''
 
-lg = logger.PlateLogger(isRecord=False)
+lg = logger.PlateLogger(isRecord=True)
 
 if __name__ == '__main__':
     dirlist = os.listdir(root_path)
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     lg.log_time()
     lg.log_img_folder(root_path)
     lg.log_platform()
-    for each in dirlist[:30]:
+    for each in dirlist:
         file_name = root_path+each
         img = cv2.imread(file_name)
         try:

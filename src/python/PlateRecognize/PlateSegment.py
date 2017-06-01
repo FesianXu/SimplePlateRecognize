@@ -191,6 +191,7 @@ class PlateSegment(object):
         return real_contours
 
     # @test.timeit
+    # TODO(FesianXu) 优化中心点的位置和box的窗口信息，考虑用自适应聚集收敛的方法。
     def plateSegment(self, img, isGray=False, gray_img=None):
         '''
         :: 对二值车牌进行字符分割

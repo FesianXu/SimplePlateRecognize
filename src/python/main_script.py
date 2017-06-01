@@ -21,7 +21,7 @@ is_saveGray = False
 if __name__ == '__main__':
     detector = PlateDetector.PlateDetector()
     path = 'F:/opencvjpg/'
-    name = '1014.jpg'
+    name = '1008.jpg'
     file_name = path+name
     img = cv2.imread(file_name)
     img_mat = det.getPlateRegion(img)
