@@ -12,7 +12,7 @@ import cv2
 import PlateRecognize.recognizePlate as recog
 import PlateRecognize.logger as logger
 
-root_path = 'F:/opencvjpg/test_img/'
+root_path = 'F:/opencvjpg/new_plate_img/'
 save_plate_path = ''
 
 lg = logger.PlateLogger()
