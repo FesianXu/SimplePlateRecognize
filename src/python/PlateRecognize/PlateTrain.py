@@ -36,25 +36,45 @@ class PlateTrain(object):
     __isSet = False  # 是否已经设置了绝对项目路径
     __n_classes = 34  # 包括字母和数字
     __n_input = 32*64  # 展开后的图片尺寸
-    __out_loop_limits = 35  # 一层外部学习递归数
-    __train_inner_times = 10  # 二层内部学习递归数
+    __out_loop_limits = 1  # 一层外部学习递归数
+    __train_inner_times = 1  # 二层内部学习递归数
     __cnn_dropout = 0.75
     __learning_rate = 0.002  # 梯度下降学习率
+    __fc_inner_cell = 1024  # 全连接层的隐藏层神经元大小
+    # Store layers weight & bias
+    __weights = {
+        # 5x5 conv, 1 input, 32 outputs
+        'wc1': tf.Variable(tf.random_normal([5, 5, 1, 32])),
+        # 5x5 conv, 32 inputs, 64 outputs
+        'wc2': tf.Variable(tf.random_normal([5, 5, 32, 64])),
+        # fully connected, 7*7*64 inputs, 1024 outputs
+        'wd1': tf.Variable(tf.random_normal([16*8*64, __fc_inner_cell])),
+        # 1024 inputs, 10 outputs (class prediction)
+        'out': tf.Variable(tf.random_normal([__fc_inner_cell, __n_classes]))
+    }
+
+    __biases = {
+        'bc1': tf.Variable(tf.random_normal([32])),
+        'bc2': tf.Variable(tf.random_normal([64])),
+        'bd1': tf.Variable(tf.random_normal([__fc_inner_cell])),
+        'out': tf.Variable(tf.random_normal([__n_classes]))
+    }
     isplate_svm = FeatureExtraction.FeatureExtraction()
 
-    def __init__(self):
+    def __init__(self, mode='train'):
         if self.__isSet is not True:
             BASE_DIR = self.__project_root_path = os.path.dirname(__file__)
             self.__project_root_path = os.path.dirname(os.path.dirname(os.path.dirname(BASE_DIR)))
             self.__is_plate_model_save_path = self.__project_root_path+self.__is_plate_model_save_path
             self.__predict_char_model_save_path = self.__project_root_path+self.__predict_char_model_save_path
             self.__predict_char_model_save_path = self.__predict_char_model_save_path.encode('gbk')
-            self.__number_samples_mat_path = self.__project_root_path+self.__number_samples_mat_path
-            self.__alphabet_samples_mat_path = self.__project_root_path+self.__alphabet_samples_mat_path
-            self.__number_each_path = [self.__number_samples_mat_path+x+'/' for x in os.listdir(self.__number_samples_mat_path)]
-            self.__alphabet_each_path = [self.__alphabet_samples_mat_path+x+'/' for x in os.listdir(self.__alphabet_samples_mat_path)]
-            self.__number_list_mat = self.__divideTestAndTrain(self.__number_each_path)
-            self.__alphabet_list_mat = self.__divideTestAndTrain(self.__alphabet_each_path)
+            if mode == 'train':
+                self.__number_samples_mat_path = self.__project_root_path+self.__number_samples_mat_path
+                self.__alphabet_samples_mat_path = self.__project_root_path+self.__alphabet_samples_mat_path
+                self.__number_each_path = [self.__number_samples_mat_path+x+'/' for x in os.listdir(self.__number_samples_mat_path)]
+                self.__alphabet_each_path = [self.__alphabet_samples_mat_path+x+'/' for x in os.listdir(self.__alphabet_samples_mat_path)]
+                self.__number_list_mat = self.__divideTestAndTrain(self.__number_each_path)
+                self.__alphabet_list_mat = self.__divideTestAndTrain(self.__alphabet_each_path)
         self.__isSet = True
 
 
@@ -146,67 +166,49 @@ class PlateTrain(object):
         return samples_mat, labels_mat
 
 
-    def train_predict_chars(self):
-        __fc_inner_cell = 1024  # 全连接层的隐藏层神经元大小
-        # Store layers weight & bias
-        weights = {
-            # 5x5 conv, 1 input, 32 outputs
-            'wc1': tf.Variable(tf.random_normal([5, 5, 1, 32])),
-            # 5x5 conv, 32 inputs, 64 outputs
-            'wc2': tf.Variable(tf.random_normal([5, 5, 32, 64])),
-            # fully connected, 7*7*64 inputs, 1024 outputs
-            'wd1': tf.Variable(tf.random_normal([16*8*64, __fc_inner_cell])),
-            # 1024 inputs, 10 outputs (class prediction)
-            'out': tf.Variable(tf.random_normal([__fc_inner_cell, self.__n_classes]))
-        }
+    # Create some wrappers for simplicity
+    def __conv2d(self, x, W, b, strides=1):
+        # Conv2D wrapper, with bias and relu activation
+        x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
+        x = tf.nn.bias_add(x, b)
+        return tf.nn.relu(x)
 
-        biases = {
-            'bc1': tf.Variable(tf.random_normal([32])),
-            'bc2': tf.Variable(tf.random_normal([64])),
-            'bd1': tf.Variable(tf.random_normal([__fc_inner_cell])),
-            'out': tf.Variable(tf.random_normal([self.__n_classes]))
-        }
+    def __maxpool2d(self, x, k=2):
+        # MaxPool2D wrapper
+        return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1],
+                              padding='SAME')
+
+    # Create model
+    def __conv_net(self, x, weights, biases, dropout):
+        x = tf.reshape(x, shape=[-1, 64, 32, 1])
+        # Convolution Layer
+        conv1 = self.__conv2d(x, weights['wc1'], biases['bc1'])
+        # Max Pooling (down-sampling)
+        conv1 = self.__maxpool2d(conv1, k=2)
+        # Convolution Layer
+        conv2 = self.__conv2d(conv1, weights['wc2'], biases['bc2'])
+        # Max Pooling (down-sampling)
+        conv2 = self.__maxpool2d(conv2, k=2)
+        # Fully connected layer
+        # Reshape conv2 output to fit fully connected layer input
+        fc1 = tf.reshape(conv2, [-1, weights['wd1'].get_shape().as_list()[0]])
+        fc1 = tf.add(tf.matmul(fc1, weights['wd1']), biases['bd1'])
+        fc1 = tf.nn.relu(fc1)
+        # Apply Dropout
+        fc1 = tf.nn.dropout(fc1, dropout)
+        # Output, class prediction
+        out = tf.add(tf.matmul(fc1, weights['out']), biases['out'])
+        return out
+
+
+    def train_predict_chars(self):
         # tf Graph input
         x = tf.placeholder(tf.float32, [None, self.__n_input])
         y = tf.placeholder(tf.float32, [None, self.__n_classes])
         keep_prob = tf.placeholder(tf.float32)  # dropout (keep probability)
 
-        # Create some wrappers for simplicity
-        def conv2d(x, W, b, strides=1):
-            # Conv2D wrapper, with bias and relu activation
-            x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
-            x = tf.nn.bias_add(x, b)
-            return tf.nn.relu(x)
-
-        def maxpool2d(x, k=2):
-            # MaxPool2D wrapper
-            return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1],
-                                  padding='SAME')
-
-        # Create model
-        def conv_net(x, weights, biases, dropout):
-            x = tf.reshape(x, shape=[-1, 64, 32, 1])
-            # Convolution Layer
-            conv1 = conv2d(x, weights['wc1'], biases['bc1'])
-            # Max Pooling (down-sampling)
-            conv1 = maxpool2d(conv1, k=2)
-            # Convolution Layer
-            conv2 = conv2d(conv1, weights['wc2'], biases['bc2'])
-            # Max Pooling (down-sampling)
-            conv2 = maxpool2d(conv2, k=2)
-            # Fully connected layer
-            # Reshape conv2 output to fit fully connected layer input
-            fc1 = tf.reshape(conv2, [-1, weights['wd1'].get_shape().as_list()[0]])
-            fc1 = tf.add(tf.matmul(fc1, weights['wd1']), biases['bd1'])
-            fc1 = tf.nn.relu(fc1)
-            # Apply Dropout
-            fc1 = tf.nn.dropout(fc1, dropout)
-            # Output, class prediction
-            out = tf.add(tf.matmul(fc1, weights['out']), biases['out'])
-            return out
-
         # Construct model
-        pred = conv_net(x, weights, biases, keep_prob)
+        pred = self.__conv_net(x, self.__weights, self.__biases, keep_prob)
         # Define loss and optimizer
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
         optimizer = tf.train.AdamOptimizer(learning_rate=self.__learning_rate).minimize(cost)
@@ -260,5 +262,8 @@ class PlateTrain(object):
 
 if __name__ == '__main__':
     tr = PlateTrain()
-    tr.train_predict_chars()
+    img = cv2.imread('C:/1.jpg', -1)
+
+
+
     pass

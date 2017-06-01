@@ -9,10 +9,11 @@ __version__ = 'version 0.1'
 将矫正好的车牌进行字符分割
 '''
 
-import test
+# import test
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import PlateRecognize.CharsPredict as CharsPredict
 
 class PlateSegment(object):
     '''
@@ -112,7 +113,7 @@ class PlateSegment(object):
         return roi_set
 
 
-    @test.timeit
+    # @test.timeit
     def __getMissingCharsMsgRoughly(self, type_list, center_list):
         '''
         :: 粗糙得到所有车牌字符中心的位置坐标
@@ -190,7 +191,7 @@ class PlateSegment(object):
                     real_contours.append(each)
         return real_contours
 
-    @test.timeit
+    # @test.timeit
     def plateSegment(self, img, isGray=False, gray_img=None):
         '''
         :: 对二值车牌进行字符分割
@@ -219,20 +220,22 @@ class PlateSegment(object):
 ########################################################################################################################
 
 import PlateRecognize.PlateDetector as PlateDetector
-path = 'F:/opencvjpg/test_img/'
-name = '10000.jpg'
+path = 'F:/opencvjpg/'
+name = '1156.jpg'
 file_name = path+name
 img = cv2.imread(file_name)
 is_saveGray = False
 det = PlateDetector.PlateDetector()
 seg = PlateSegment(det.getImageNormalizedWidth(), det.getImageNormalizedHeight())
 
-@test.timeit
+# @test.timeit
 def main():
     img_mat = det.getPlateRegion(img)
     img_out_bin, img_out_gray = det.plateCorrect(img_mat)
     for ind, each in enumerate(img_out_bin):
         roi_set = seg.plateSegment(each, is_saveGray)
+        res = CharsPredict.predict_chars(roi_set)
+
         # for ind_i, each_i in enumerate(roi_set):
         #     plt.subplot(1, 7, ind_i+1)
         #     plt.imshow(each_i, cmap ='gray')
@@ -242,3 +245,4 @@ def main():
 if __name__ == '__main__':
     cv2.setUseOptimized(True)
     main()
+
