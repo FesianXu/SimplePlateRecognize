@@ -13,6 +13,7 @@ import PlateRecognize.PlateSegment as PlateSegment
 import PlateRecognize.PlateDetector as PlateDetector
 import matplotlib.pyplot as plt
 import cv2
+import PlateRecognize.logger as logger
 
 det = PlateDetector.PlateDetector()
 seg = PlateSegment.PlateSegment(det.getImageNormalizedWidth(), det.getImageNormalizedHeight())
@@ -20,13 +21,16 @@ is_saveGray = False
 
 if __name__ == '__main__':
     path = 'F:/opencvjpg/'
-    name = '1008.jpg'
+    name = '41.jpg'
     file_name = path+name
     img = cv2.imread(file_name)
+    lg = logger.PlateLogger()
     img_mat = det.getPlateRegion(img)
     img_out_bin, img_out_gray, _ = det.plateCorrect(img_mat)
+
     for ind, each in enumerate(img_out_bin):
         roi_set = seg.plateSegment(each, is_saveGray)
+
         for ind_i, each_i in enumerate(roi_set):
             plt.subplot(1, 7, ind_i+1)
             plt.imshow(each_i, cmap ='gray')

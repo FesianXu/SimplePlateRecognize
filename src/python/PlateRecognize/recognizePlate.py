@@ -21,14 +21,14 @@ def recognizePlate(img):
     '''
     :: 对输入的图片进行识别
     :param img: 图片，彩色三通道
-    :return: 识别的结果列表, 矫正类型list
+    :return: 识别的结果列表, 矫正类型list，车牌图片
     '''
     img_mat = det.getPlateRegion(img)
     img_out_bin, img_out_gray, correct_types = det.plateCorrect(img_mat)
     for ind, each in enumerate(img_out_bin):
         roi_set = seg.plateSegment(each, is_saveGray)
         res_list = CharsPredict.predict_chars(roi_set)
-    return res_list, correct_types
+    return res_list, correct_types, img_out_bin, img_out_gray
 
 
 ########################################################################################################################

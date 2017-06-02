@@ -10,21 +10,25 @@ __platform__ = 'Python 3.5 in Anaconda, with TensorFlow, LibSVM, scikit-learn, o
 用于实验纪录文档生成
 '''
 import os
-import platform
+# import platform
 import time
+import cv2
 
 class PlateLogger(object):
 
     __log_record_path = '/test_record/txt_files/'  # 实验记录文件夹
+    __log_save_result_plate_path = 'F:/opencvjpg/training sets/plates/'
     __isSet = False  # 是否已经设置了绝对项目路径
     __project_root_path = ''
     __file_handle = None
     __isRecord = True
+    __isSaveResultImages = True
 
-    def __init__(self, isRecord=True):
+    def __init__(self, isRecord=True, isSaveResultImages=True):
         self.__isRecord = isRecord
+        self.__isSaveResultImages = isSaveResultImages
         if self.__isRecord is True:
-            if self.__isSet  is False:
+            if self.__isSet is False:
                 self.__isSet = True
                 BASE_DIR = self.__project_root_path = os.path.dirname(__file__)
                 self.__project_root_path = os.path.dirname(os.path.dirname(os.path.dirname(BASE_DIR)))
@@ -124,6 +128,24 @@ class PlateLogger(object):
             self.__file_handle.write('      Total Image counts = %d \r\n' % size_imgs)
             self.__file_handle.write('      Valid Proportion: %f \r\n' % (valid_num/size_imgs))
             self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
+
+
+    def log_save_plate(self, img, res_list, image_raw_name=None):
+        if self.__isSaveResultImages:
+            if image_raw_name is None:
+                name =('').join(res_list)+'.png'
+            else:
+                name = image_raw_name+'   '+('').join(res_list)+'.png'
+                # 原图片名字  识别结果
+            cv2.imencode('.png', img)[1].tofile(self.__log_save_result_plate_path+name)
+
+    def log_loggerSetting(self):
+        self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
+        self.__file_handle.write('∏    The logger setting is: \r\n')
+        self.__file_handle.write('      The Logger files restore in folder: %s  \r\n' % self.__log_record_path)
+        self.__file_handle.write('      Whether turn on recording function: %s \r\n' % self.__isRecord)
+        self.__file_handle.write('      Whether turn on saving plates recognition result images: %s \r\n' % self.__isSaveResultImages)
+        self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
 
 
     def file_close(self):

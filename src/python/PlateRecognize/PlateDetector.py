@@ -112,6 +112,7 @@ class PlateDetector(object):
         return rotate_img
 
 
+    # TODO(FesianXu) 在得到k的过程中，除以sin(theta)容易出现除0异常
     def __rotateAngle(self, img):
         '''
         :: 求车牌的倾斜角，以决定矫正方案
@@ -155,11 +156,9 @@ class PlateDetector(object):
             v1, v2 = np.squeeze(np.asarray(p1-pmedian)), np.squeeze(np.asarray(p2-pmedian))
             angle = np.dot(v1, v2.transpose())/(np.sqrt(v1.dot(v1))*np.sqrt(v2.dot(v2)))
             tmpcos.append([angle, pmedian])
-        loop = 0
         for eachcos, point in tmpcos:
             if cosine_thresh_lower <= eachcos <= cosine_thresh_upper:
                 vertices_list.append(point)
-            loop += 1
         vertices_list = np.array(vertices_list)
         vertices_list_reshape = vertices_list.reshape((len(vertices_list), 2))
         # 这里的cluster有可能因为边角点数不足而错误，需要异常捕获处理。

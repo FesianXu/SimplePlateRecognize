@@ -19,7 +19,7 @@ import PlateRecognize.logger as logger
 root_path = 'F:/opencvjpg/new_plate_img/'
 save_plate_path = ''
 
-lg = logger.PlateLogger(isRecord=True)
+lg = logger.PlateLogger(isRecord=True, isSaveResultImages=True)
 
 if __name__ == '__main__':
     dirlist = os.listdir(root_path)
@@ -29,15 +29,17 @@ if __name__ == '__main__':
     valid_list = []
     correct_types_list = []
     lg.log_info()
+    lg.log_loggerSetting()
     lg.log_date()
     lg.log_time()
     lg.log_img_folder(root_path)
     lg.log_platform()
-    for each in dirlist:
+    for each in dirlist[:]:
         file_name = root_path+each
         img = cv2.imread(file_name)
         try:
-            res, correct_types = recog.recognizePlate(img)
+            res, correct_types, img_bin, _ = recog.recognizePlate(img)
+            lg.log_save_plate(img_bin[0], res, each)
             valid_num += 1
             print('process in = ', valid_num)
             valid_list.append(each)
