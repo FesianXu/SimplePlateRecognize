@@ -12,6 +12,7 @@ __version__ = 'version 0.1'
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 
 class PlateSegment(object):
@@ -208,12 +209,52 @@ class PlateSegment(object):
             roi_set = self.__cutTheChars(gray_img, center_list, width_set, height_set, isGray)
         else:
             roi_set = self.__cutTheChars(img, center_list, width_set, height_set, isGray)
+
+        ######################### DEBUG ########################################
         loc = np.array(center_list).reshape(len(center_list), 2)
-        # plt.imshow(img,cmap ='gray')
-        # for each in chars_contours:
-        #     plt.scatter(each[:,:,0], each[:,:,1], color='r')
-        # plt.scatter(loc[:,0], loc[:,1], color='b')
-        # plt.show()
+        fig1 = plt.figure()
+        ax1 = fig1.add_subplot(111, aspect='equal')
+        plt.imshow(img, cmap ='gray')
+        for each in chars_contours:
+            plt.scatter(each[:,:,0], each[:,:,1], color='r')
+        plt.scatter(loc[:,0], loc[:,1], color='b')
+        posx, posy = loc[:, 0], loc[:, 1]
+        m_loc = []
+        for ind, each in enumerate(posx):
+            ax1.add_patch(
+                patches.Rectangle(
+                    (posx[ind]-width_set[ind]/2, posy[ind]-height_set[ind]/2),   # (x,y)
+                    width_set[ind],          # width
+                    height_set[ind],          # height
+                    fill=False,
+                    linewidth=2.0,
+                    edgecolor=(0.8, 0.8, 0.1)
+                )
+            )
+            min_row, max_row = int(posy[ind]-height_set[ind]/2), int(posy[ind]+height_set[ind]/2)
+            min_col, max_col = int(posx[ind]-width_set[ind]/2), int(posx[ind]+width_set[ind]/2)
+            roi_img = img[min_row:max_row, min_col:max_col]
+            m = cv2.moments(roi_img)
+            xc, yc = m['m10']/m['m00'], m['m01']/m['m00']
+            m_loc.append((xc+min_col, yc+min_row))
+        m_loc = np.array(m_loc).reshape(len(m_loc), 2)
+        plt.scatter(m_loc[:,0], m_loc[:,1], color='g')
+        posx, posy = m_loc[:, 0], m_loc[:, 1]
+        for ind, each in enumerate(posx):
+            ax1.add_patch(
+                patches.Rectangle(
+                    (posx[ind]-width_set[ind]/2, posy[ind]-height_set[ind]/2),   # (x,y)
+                    width_set[ind],          # width
+                    height_set[ind],          # height
+                    fill=False,
+                    linewidth=2.0,
+                    edgecolor=(0.20, 0.91, 0.13),
+                    linestyle='--'
+                )
+            )
+        plt.show()
+        ######################### DEBUG ########################################
+
         return roi_set
 
 
