@@ -42,8 +42,8 @@ class PlateDetector(object):
     __img_norm_height = 600  # 图像标准化宽度
     __plate_region_norm_width = 300  # 车牌区域未校准时的标准化长度
     __plate_region_norm_height = 140  # 车牌区域未校准时的标准化宽度
-    __plate_tilt_type1 = -1  # 以下的可以不进行倾斜矫正，无风险
-    __plate_tilt_type2 = 2  # 以下的进行简单的旋转矫正， 风险较小，主要集中在测量角度的精确度上
+    __plate_tilt_type1 = 3  # 以下的可以不进行倾斜矫正，无风险
+    __plate_tilt_type2 = 7  # 以下的进行简单的旋转矫正， 风险较小，主要集中在测量角度的精确度上
     # 其余的进行透视变换矫正，风险最大，主要集中在四点定位准确度上
     __is_plate_model_save_path = '/src/python/train_data/is_plate/is_plate_svm_model.model'
     __project_root_path = u''  # 绝对项目路径
@@ -244,10 +244,11 @@ class PlateDetector(object):
         '''
         :: 矫正车牌，利用三种可能的方法矫正 判断是否是车牌，通过SVM
         :param img_mat: 未矫正的车牌区域集合
-        :return: 判断后，并且矫正过后的车牌集合，数量不一定等于img_mat
+        :return: 判断后，并且矫正过后的车牌集合，数量不一定等于img_mat, 返回矫正类型
         '''
         img_out_bin = []
         img_out_gray = []
+        correct_types = []
         for img in img_mat:
             img_blue = self.__getBlueRegion(img)
             dilate_core = np.ones((10, 15), np.uint8)
@@ -272,25 +273,28 @@ class PlateDetector(object):
                     max_row, min_row = max(plate_list_valid[:, :, 1])[0], min(plate_list_valid[:, :, 1])[0]
                     img_correct = img[min_row:max_row, min_col:max_col, :]
                     img_correct = cv2.resize(img_correct, (self.__plate_norm_width, self.__plate_norm_height))
-                # elif self.__plate_tilt_type1 < abs(angle_avg) < self.__plate_tilt_type2:  # 进行简单旋转矫正
-                #     img_correct = self.__imrotate(img, angle_avg)
-                #     img_correct_blue = self.__getBlueRegion(img_correct)
-                #     dilate_kernel = np.ones((10, 15), np.uint8)
-                #     img_correct_blue = cv2.dilate(img_correct_blue, dilate_kernel)
-                #     _, img_correct_contours, _ = cv2.findContours(img_correct_blue, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-                #     img_correct_list = []
-                #     for each_blue in img_correct_contours:
-                #         dcol, drow = max(each_blue[:, :, 0])-min(each_blue[:, :, 0]), max(each_blue[:, :, 1])-min(each_blue[:, :, 1])
-                #         if self.__plate_wh_lower <= dcol/(drow+0.0001) <= self.__plate_wh_upper and dcol >= self.__plate_wh_least_width \
-                #                 and drow >= self.__plate_wh_least_height:
-                #             img_correct_list.append(each_blue)
-                #     valid_blue = img_correct_list[0]
-                #     max_col, min_col = max(valid_blue[:, :, 0])[0], min(valid_blue[:, :, 0])[0]
-                #     max_row, min_row = max(valid_blue[:, :, 1])[0], min(valid_blue[:, :, 1])[0]
-                #     img_correct = img_correct[min_row:max_row, min_col:max_col, :]
-                #     img_correct = cv2.resize(img_correct, (self.__plate_norm_width, self.__plate_norm_height))
+                    correct_types.append(0)
+                elif self.__plate_tilt_type1 < abs(angle_avg) < self.__plate_tilt_type2:  # 进行简单旋转矫正
+                    img_correct = self.__imrotate(img, angle_avg)
+                    img_correct_blue = self.__getBlueRegion(img_correct)
+                    dilate_kernel = np.ones((10, 15), np.uint8)
+                    img_correct_blue = cv2.dilate(img_correct_blue, dilate_kernel)
+                    _, img_correct_contours, _ = cv2.findContours(img_correct_blue, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                    img_correct_list = []
+                    for each_blue in img_correct_contours:
+                        dcol, drow = max(each_blue[:, :, 0])-min(each_blue[:, :, 0]), max(each_blue[:, :, 1])-min(each_blue[:, :, 1])
+                        if self.__plate_wh_lower <= dcol/(drow+0.0001) <= self.__plate_wh_upper and dcol >= self.__plate_wh_least_width \
+                                and drow >= self.__plate_wh_least_height:
+                            img_correct_list.append(each_blue)
+                    valid_blue = img_correct_list[0]
+                    max_col, min_col = max(valid_blue[:, :, 0])[0], min(valid_blue[:, :, 0])[0]
+                    max_row, min_row = max(valid_blue[:, :, 1])[0], min(valid_blue[:, :, 1])[0]
+                    img_correct = img_correct[min_row:max_row, min_col:max_col, :]
+                    img_correct = cv2.resize(img_correct, (self.__plate_norm_width, self.__plate_norm_height))
+                    correct_types.append(1)
                 else:
                     img_correct = self.__projectionCorrect(img, plate_list_valid)
+                    correct_types.append(2)
 
                 img_correct_gray = cv2.cvtColor(img_correct, cv2.COLOR_BGR2GRAY)
                 _, img_correct = cv2.threshold(img_correct_gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
@@ -301,7 +305,7 @@ class PlateDetector(object):
                     img_frame = cv2.erode(img_frame, erode_kernel)
                     img_out_bin.append(img_frame)
                     img_out_gray.append(img_correct_gray)
-        return img_out_bin, img_out_gray
+        return img_out_bin, img_out_gray, correct_types
 
     def getImageNormalizedWidth(self):
         return self.__plate_norm_width

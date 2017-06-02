@@ -19,13 +19,12 @@ seg = PlateSegment.PlateSegment(det.getImageNormalizedWidth(), det.getImageNorma
 is_saveGray = False
 
 if __name__ == '__main__':
-    detector = PlateDetector.PlateDetector()
     path = 'F:/opencvjpg/'
     name = '1008.jpg'
     file_name = path+name
     img = cv2.imread(file_name)
     img_mat = det.getPlateRegion(img)
-    img_out_bin, img_out_gray = det.plateCorrect(img_mat)
+    img_out_bin, img_out_gray, _ = det.plateCorrect(img_mat)
     for ind, each in enumerate(img_out_bin):
         roi_set = seg.plateSegment(each, is_saveGray)
         for ind_i, each_i in enumerate(roi_set):

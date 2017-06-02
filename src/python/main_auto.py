@@ -27,6 +27,7 @@ if __name__ == '__main__':
     valid_num = 0
     invalid_list = []
     valid_list = []
+    correct_types_list = []
     lg.log_info()
     lg.log_date()
     lg.log_time()
@@ -36,19 +37,20 @@ if __name__ == '__main__':
         file_name = root_path+each
         img = cv2.imread(file_name)
         try:
-            res = recog.recognizePlate(img)
-            # print(res)
+            res, correct_types = recog.recognizePlate(img)
             valid_num += 1
             print('process in = ', valid_num)
             valid_list.append(each)
-        except Exception:
+            correct_types_list.append(correct_types)
+        except Exception as e:
             invalid_list.append(each)
+            print(e)
             continue
     end = time.clock()
     print('cost = ', end-begin)
     print('loop = ', valid_num)
     print('total = ', len(dirlist))
     lg.log_cost_time(begin, end, len(dirlist), valid_num)
-    lg.log_valid_list(valid_list)
+    lg.log_valid_list(valid_list, correct_types_list)
     lg.log_invalid_list(invalid_list)
     lg.file_close()

@@ -36,63 +36,86 @@ class PlateLogger(object):
 
     def log_invalid_list(self, name_list, invalid_type_list=None):
         if self.__isRecord is True:
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
             self.__file_handle.write('∏  The name list of failing plates recognition: \r\n')
             if invalid_type_list is None:
                 for ind, each in enumerate(name_list):
                     self.__file_handle.write('No.'+str(ind)+'            '+each+'   \r\n')
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
 
 
     def log_valid_list(self, name_list, correct_type_list=None):
         if self.__isRecord is True:
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
             self.__file_handle.write('∏  The name list of successful plates recognition: \r\n')
             if correct_type_list is None:
                 for ind, each in enumerate(name_list):
                     self.__file_handle.write('No.'+str(ind)+'            '+each+'  \r\n')
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            else:
+                type1_list, type2_list, type3_list = [], [], []
+                type_list_all = [type1_list, type2_list, type3_list]
+                for ind, each_type in enumerate(correct_type_list):
+                    for types in [0, 1, 2]:
+                        if types in each_type:
+                            type_list_all[types].append(name_list[ind])
+                self.__file_handle.write('***************************\r\n')
+                self.__file_handle.write('Type 1 has %d images \r\n' % len(type1_list))
+                self.__file_handle.write('Type 2 has %d images \r\n' % len(type2_list))
+                self.__file_handle.write('Type 3 has %d images \r\n' % len(type3_list))
+                self.__file_handle.write('***************************\r\n')
+                self.__file_handle.write('∮ Don not need to correct images name list: \r\n')
+                for ind, each in enumerate(type1_list):
+                    self.__file_handle.write('No.'+str(ind+1)+'   '+each+'\r\n')
+                self.__file_handle.write('***************************\r\n')
+                self.__file_handle.write('∮ Just simply rotate the plate to correct images name list: \r\n')
+                for ind, each in enumerate(type2_list):
+                    self.__file_handle.write('No.'+str(ind+1)+'   '+each+'\r\n')
+                self.__file_handle.write('***************************\r\n')
+                self.__file_handle.write('∮ Use projective transform to correct plate images name list: \r\n')
+                for ind, each in enumerate(type3_list):
+                    self.__file_handle.write('No.'+str(ind+1)+'   '+each+'\r\n')
+                self.__file_handle.write('***************************\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
 
 
     def log_platform(self):
         if self.__isRecord is True:
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
             self.__file_handle.write('∏  Run in platform = %s \r\n' % __platform__)
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
 
 
     def log_time(self):
         if self.__isRecord is True:
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
             self.__file_handle.write('∏  current time = '+time.strftime("%H:%M:%S  \r\n"))
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
 
 
     def log_date(self):
         if self.__isRecord is True:
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
             self.__file_handle.write('∏  current date = '+time.strftime("20%y-%m-%d \r\n"))
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
 
 
     def log_img_folder(self, folder_path):
         if self.__isRecord is True:
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
             self.__file_handle.write('∏  Recognize the plates in folder = %s \r\n' % folder_path)
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
 
     def log_info(self):
         if self.__isRecord is True:
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
             self.__file_handle.write('Author: %s \r\n' % __author__)
             self.__file_handle.write('Version: %s \r\n' % __version__)
             self.__file_handle.write('Coding Date: %s \r\n' % __date__)
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
 
     def log_cost_time(self, begin, end, size_imgs, valid_num):
         if self.__isRecord is True:
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
             self.__file_handle.write('∏    The costing time = %f seconds, with processing %d images \r\n' % (end-begin, size_imgs))
             self.__file_handle.write('      Each images takes %f seconds average \r\n' % ((end-begin)/size_imgs))
             self.__file_handle.write('      Valid images takes %f seconds average \r\n' % ((end-begin)/valid_num))
@@ -100,7 +123,7 @@ class PlateLogger(object):
             self.__file_handle.write('      Invalid images counts = %d \r\n' % (size_imgs-valid_num))
             self.__file_handle.write('      Total Image counts = %d \r\n' % size_imgs)
             self.__file_handle.write('      Valid Proportion: %f \r\n' % (valid_num/size_imgs))
-            self.__file_handle.write('-----------------------------------------------------------\r\n')
+            self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
 
 
     def file_close(self):

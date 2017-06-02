@@ -1,0 +1,369 @@
+-----------------------------------------------------------------------------
+Author: FesianXu 
+Version: version 0.1 
+Coding Date: 2017/5/23 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+กว  current date = 2017-06-02 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+กว  current time = 11:18:09  
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+กว  Recognize the plates in folder = F:/opencvjpg/new_plate_img/ 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+กว  Run in platform = Python 3.5 in Anaconda, with TensorFlow, LibSVM, scikit-learn, opencv-python 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+กว    The costing time = 64.510894 seconds, with processing 325 images 
+      Each images takes 0.198495 seconds average 
+      Valid images takes 0.319361 seconds average 
+      Valid images counts = 202 
+      Invalid images counts = 123 
+      Total Image counts = 325 
+      Valid Proportion: 0.621538 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+กว  The name list of successful plates recognition: 
+***************************
+Type 1 has 57 images 
+Type 2 has 19 images 
+Type 3 has 127 images 
+***************************
+กำ Don not need to correct images name list: 
+No.1   1008 (2).jpg
+No.2   1008.jpg
+No.3   1073.jpg
+No.4   1079.jpg
+No.5   1082.jpg
+No.6   1084.jpg
+No.7   1090.jpg
+No.8   1102.jpg
+No.9   1103.jpg
+No.10   1108.jpg
+No.11   1130.jpg
+No.12   1131.jpg
+No.13   1141.jpg
+No.14   1152.jpg
+No.15   1155.jpg
+No.16   1160.jpg
+No.17   1161.jpg
+No.18   1172.jpg
+No.19   1183.jpg
+No.20   1184.jpg
+No.21   1192.jpg
+No.22   1195.jpg
+No.23   1198.jpg
+No.24   12.jpg
+No.25   13.jpg
+No.26   14 (2).JPG
+No.27   14.jpg
+No.28   17.jpg
+No.29   25.jpg
+No.30   29 (2).JPG
+No.31   32.jpg
+No.32   34.jpg
+No.33   37.jpg
+No.34   39.JPG
+No.35   40.jpg
+No.36   43.JPG
+No.37   47.jpg
+No.38   54.jpg
+No.39   55.jpg
+No.40   56.jpg
+No.41   58 (2).jpg
+No.42   58.jpg
+No.43   64.jpg
+No.44   66.jpg
+No.45   70.jpg
+No.46   72.jpg
+No.47   74.jpg
+No.48   78 (2).jpg
+No.49   80 (2).jpg
+No.50   80.jpg
+No.51   82.jpg
+No.52   83.jpg
+No.53   85.jpg
+No.54   87.jpg
+No.55   88.jpg
+No.56   91.jpg
+No.57   93.jpg
+***************************
+กำ Just simply rotate the plate to correct images name list: 
+No.1   1080.jpg
+No.2   1089.jpg
+No.3   1101.jpg
+No.4   1109.jpg
+No.5   1111.jpg
+No.6   1116.jpg
+No.7   1194.jpg
+No.8   1202.jpg
+No.9   17 (2).jpg
+No.10   20.jpg
+No.11   21.jpg
+No.12   31.jpg
+No.13   47 (2).JPG
+No.14   60.jpg
+No.15   69 (2).jpg
+No.16   77 (2).jpg
+No.17   79 (2).jpg
+No.18   81 (2).jpg
+No.19   83 (2).jpg
+***************************
+กำ Use projective transform to correct plate images name list: 
+No.1   10 (2).JPG
+No.2   10.JPG
+No.3   100.jpg
+No.4   10000.JPG
+No.5   1006.JPG
+No.6   1007.JPG
+No.7   1009 (2).jpg
+No.8   1009.jpg
+No.9   101.jpg
+No.10   1010.jpg
+No.11   1013.JPG
+No.12   1014.jpg
+No.13   1015.jpg
+No.14   1016.jpg
+No.15   1017.JPG
+No.16   1018.JPG
+No.17   1021.jpg
+No.18   1023.jpg
+No.19   1024.jpg
+No.20   1025.jpg
+No.21   1026.jpg
+No.22   1028.JPG
+No.23   1029.jpg
+No.24   1031.JPG
+No.25   1036.JPG
+No.26   1041.JPG
+No.27   1043.JPG
+No.28   1065.jpg
+No.29   1067.jpg
+No.30   1068.jpg
+No.31   1069.jpg
+No.32   1071.jpg
+No.33   1076.jpg
+No.34   1078.jpg
+No.35   1083.jpg
+No.36   1087.jpg
+No.37   1088.jpg
+No.38   1091.jpg
+No.39   1093.jpg
+No.40   1094.jpg
+No.41   1097.jpg
+No.42   1099.jpg
+No.43   1104.jpg
+No.44   1107.jpg
+No.45   1117.jpg
+No.46   1142.jpg
+No.47   1145.jpg
+No.48   1148.jpg
+No.49   1150.jpg
+No.50   1151.jpg
+No.51   1156.jpg
+No.52   1174.jpg
+No.53   1190.jpg
+No.54   1197.jpg
+No.55   1199.jpg
+No.56   1200.jpg
+No.57   1201.jpg
+No.58   1204.jpg
+No.59   13 (2).JPG
+No.60   16 (2).JPG
+No.61   18.jpg
+No.62   2.JPG
+No.63   20 (2).JPG
+No.64   21 (2).JPG
+No.65   22 (2).jpg
+No.66   23.jpg
+No.67   25 (2).JPG
+No.68   26 (2).JPG
+No.69   26.jpg
+No.70   27 (2).JPG
+No.71   30 (2).JPG
+No.72   32 (2).JPG
+No.73   33.JPG
+No.74   35 (2).JPG
+No.75   36 (2).JPG
+No.76   37 (2).JPG
+No.77   38 (2).JPG
+No.78   4 (2).JPG
+No.79   40 (2).JPG
+No.80   41.jpg
+No.81   42.JPG
+No.82   44 (2).JPG
+No.83   44.jpg
+No.84   45 (2).JPG
+No.85   46 (2).JPG
+No.86   49 (2).JPG
+No.87   49.jpg
+No.88   5 (2).JPG
+No.89   51 (2).JPG
+No.90   52 (2).jpg
+No.91   52.jpg
+No.92   53 (2).jpg
+No.93   53.jpg
+No.94   54 (2).jpg
+No.95   55 (2).jpg
+No.96   57 (2).jpg
+No.97   57.jpg
+No.98   59 (2).jpg
+No.99   59.jpg
+No.100   61 (2).jpg
+No.101   62 (2).jpg
+No.102   62.jpg
+No.103   63 (2).jpg
+No.104   63.jpg
+No.105   64 (2).jpg
+No.106   65 (2).jpg
+No.107   66 (2).jpg
+No.108   67 (2).jpg
+No.109   68 (2).jpg
+No.110   68.jpg
+No.111   7.JPG
+No.112   71 (2).jpg
+No.113   72 (2).jpg
+No.114   72.jpg
+No.115   73 (2).jpg
+No.116   8.JPG
+No.117   82 (2).jpg
+No.118   84 (2).jpg
+No.119   88 (2).jpg
+No.120   89 (2).jpg
+No.121   91 (2).jpg
+No.122   92 (2).jpg
+No.123   92.jpg
+No.124   93 (2).jpg
+No.125   94 (2).jpg
+No.126   95.jpg
+No.127   98.jpg
+***************************
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+กว  The name list of failing plates recognition: 
+No.0            1.JPG   
+No.1            100 (2).jpg   
+No.2            1000.jpg   
+No.3            1001.jpg   
+No.4            1011.jpg   
+No.5            1020.JPG   
+No.6            1027.JPG   
+No.7            1030.JPG   
+No.8            1035.JPG   
+No.9            1040.jpg   
+No.10            1045.JPG   
+No.11            1070.jpg   
+No.12            1072.jpg   
+No.13            1074.jpg   
+No.14            1075.jpg   
+No.15            1077.jpg   
+No.16            1081.jpg   
+No.17            1085.jpg   
+No.18            1086.jpg   
+No.19            1092.jpg   
+No.20            1095.jpg   
+No.21            1096.jpg   
+No.22            1098.jpg   
+No.23            11.JPG   
+No.24            1100.jpg   
+No.25            1105.jpg   
+No.26            1106.jpg   
+No.27            1110.jpg   
+No.28            1112.jpg   
+No.29            1113.jpg   
+No.30            1114.jpg   
+No.31            1115.jpg   
+No.32            1118.jpg   
+No.33            1119.jpg   
+No.34            1120.jpg   
+No.35            1140.jpg   
+No.36            1143.jpg   
+No.37            1144.jpg   
+No.38            1146.jpg   
+No.39            1147.jpg   
+No.40            1153.jpg   
+No.41            1154.jpg   
+No.42            1157.jpg   
+No.43            1158.jpg   
+No.44            1159.jpg   
+No.45            1162.jpg   
+No.46            1173.jpg   
+No.47            1175.jpg   
+No.48            1176.jpg   
+No.49            1177.jpg   
+No.50            1178.jpg   
+No.51            1179.jpg   
+No.52            1180.jpg   
+No.53            1181.jpg   
+No.54            1182.jpg   
+No.55            1185.jpg   
+No.56            1186.jpg   
+No.57            1187.jpg   
+No.58            1191.jpg   
+No.59            1193.jpg   
+No.60            1196.jpg   
+No.61            12 (2).JPG   
+No.62            1203.jpg   
+No.63            1205.jpg   
+No.64            15 (2).JPG   
+No.65            15.jpg   
+No.66            16.jpg   
+No.67            18 (2).JPG   
+No.68            19 (2).JPG   
+No.69            19.jpg   
+No.70            22.jpg   
+No.71            23 (2).jpg   
+No.72            24.JPG   
+No.73            27.jpg   
+No.74            28 (2).JPG   
+No.75            28.jpg   
+No.76            29.jpg   
+No.77            30.jpg   
+No.78            31 (2).JPG   
+No.79            34 (2).JPG   
+No.80            35.jpg   
+No.81            36.jpg   
+No.82            38.jpg   
+No.83            4.jpg   
+No.84            41 (2).jpg   
+No.85            45.jpg   
+No.86            46.jpg   
+No.87            48 (2).JPG   
+No.88            48.jpg   
+No.89            5.jpg   
+No.90            50 (2).JPG   
+No.91            50.jpg   
+No.92            51.jpg   
+No.93            56 (2).jpg   
+No.94            6.JPG   
+No.95            60 (2).jpg   
+No.96            61.jpg   
+No.97            65.jpg   
+No.98            67.jpg   
+No.99            69.jpg   
+No.100            70 (2).jpg   
+No.101            71.jpg   
+No.102            73.jpg   
+No.103            74 (2).jpg   
+No.104            75 (2).jpg   
+No.105            75.jpg   
+No.106            76 (2).jpg   
+No.107            76.jpg   
+No.108            77.jpg   
+No.109            78.jpg   
+No.110            79.jpg   
+No.111            81.jpg   
+No.112            84.jpg   
+No.113            85 (2).jpg   
+No.114            86 (2).jpg   
+No.115            86.jpg   
+No.116            87 (2).jpg   
+No.117            89.jpg   
+No.118            9.JPG   
+No.119            90.jpg   
+No.120            94.jpg   
+No.121            96.jpg   
+No.122            97.jpg   
+-----------------------------------------------------------------------------
