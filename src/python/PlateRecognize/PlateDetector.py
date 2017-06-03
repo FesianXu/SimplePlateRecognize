@@ -112,12 +112,12 @@ class PlateDetector(object):
         return rotate_img
 
 
-    # TODO(FesianXu) 在得到k的过程中，除以sin(theta)容易出现除0异常
+    # TODO(FesianXu) 在得到k的过程中，除以sin(theta)容易出现除0异常 (complete 2017/6/3)
     def __rotateAngle(self, img):
         '''
         :: 求车牌的倾斜角，以决定矫正方案
         :param img: 未校准车牌区域, 二值图
-        :return: 倾斜角度
+        :return: 倾斜角度, 没有检测出来返回None
         '''
         img_canny = cv2.Canny(img*255, 50, 150)
         lines = cv2.HoughLines(img_canny, 1, np.pi/180, threshold=80)
@@ -125,13 +125,16 @@ class PlateDetector(object):
         if lines is not None:
             for each in lines:
                 theta = each[0, 1]
-                k = -np.cos(theta)/np.sin(theta)
+                k = -np.cos(theta)/(np.sin(theta)+0.0001)  # 加上规范项
                 angle = round(np.arctan(k)*180/np.pi)
                 angle_list.append(angle)
         else:
             return None
-        angle_avg = sum(angle_list)/len(angle_list)
-        return angle_avg
+        if angle_list is not None:
+            angle_avg = sum(angle_list)/len(angle_list)
+            return angle_avg
+        else:
+            return None
 
 
     # @test.timeit

@@ -149,8 +149,32 @@ class PlateSegment(object):
         return new_center_list
 
 
-    def __getCharsMsgFinely(self, center_list, bin_plate):
-        pass
+    def __getCharsMsgFinely(self, type_list, bin_img, center_set, width_set, height_set):
+        '''
+
+        :param type_list:
+        :param bin_img:
+        :param center_set:
+        :param width_set:
+        :param height_set:
+        :return:
+        '''
+        missing_types = [ind for ind, types in enumerate(type_list) if types == -10]
+        current_types = [ind for ind, types in enumerate(type_list) if types != -10]
+        new_center_set = np.zeros((len(type_list), 2), np.int16)
+        center_set = np.array(center_set).reshape(len(center_set), 2)
+        for each in missing_types:
+            posx, posy = center_set[each, 0], center_set[each, 1]
+            width, height = width_set[each], height_set[each]
+            min_row, max_row = int(posy-height/2), int(posy+height/2)
+            min_col, max_col = int(posx-width/2), int(posx+width/2)
+            roi_img = bin_img[min_row:max_row, min_col:max_col]
+            m = cv2.moments(roi_img)
+            xc, yc = m['m10']/m['m00'], m['m01']/m['m00']
+            new_center_set[each, :] = (xc+min_col, yc+min_row)
+        for each in current_types:
+            new_center_set[each, :] = (int(center_set[each, 0]), int(center_set[each, 1]))
+        return new_center_set
 
 
     # @test.timeit
@@ -204,7 +228,8 @@ class PlateSegment(object):
         type_list = self.__decideCharsTypes(centers_loc)
         type_list, center_list = self.__mergeDuplicateContours(type_list, centers_loc)
         center_list = self.__getMissingCharsMsgRoughly(type_list, center_list)
-        width_set, height_set = [width_ideal]*7, [height_ideal]*7
+        width_set, height_set = [width_ideal]*7, [height_ideal]*7  # 简单粗暴处理
+        center_list = self.__getCharsMsgFinely(type_list, img, center_list, width_set, height_set)
         if isGray and gray_img is not None:
             roi_set = self.__cutTheChars(gray_img, center_list, width_set, height_set, isGray)
         else:
