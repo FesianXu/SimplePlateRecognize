@@ -38,13 +38,19 @@ class PlateLogger(object):
                 file_name = file_name
                 self.__file_handle = open(file_name, 'w')
 
-    def log_invalid_list(self, name_list, invalid_type_list=None):
+    def log_invalid_list(self, name_list, except_list=None):
         if self.__isRecord is True:
             self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
             self.__file_handle.write('∏  The name list of failing plates recognition: \r\n')
-            if invalid_type_list is None:
+            if except_list is None:
+                self.__file_handle.write('No.         '+"image's Name    \r\n")
                 for ind, each in enumerate(name_list):
                     self.__file_handle.write('No.'+str(ind)+'            '+each+'   \r\n')
+            else:
+                self.__file_handle.write('No.           '+"image's Name     "+'Fail reasons    \r\n')
+                for ind, each in enumerate(name_list):
+                    self.__file_handle.write('No.'+str(ind)+'            '+each)
+                    self.__file_handle.write('      '+str(except_list[ind])+'    \r\n')
             self.__file_handle.write('-----------------------------------------------------------------------------\r\n')
 
 

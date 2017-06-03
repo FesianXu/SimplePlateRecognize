@@ -26,6 +26,7 @@ if __name__ == '__main__':
     begin = time.clock()
     valid_num = 0
     invalid_list = []
+    except_list = []
     valid_list = []
     correct_types_list = []
     lg.log_info()
@@ -39,14 +40,14 @@ if __name__ == '__main__':
         img = cv2.imread(file_name)
         try:
             res, correct_types, img_bin, _ = recog.recognizePlate(img)
-            lg.log_save_plate(img_bin[0], res, each)
+            lg.log_save_plate(img_bin[0], res[0], each)
             valid_num += 1
             print('process in = ', valid_num)
             valid_list.append(each)
             correct_types_list.append(correct_types)
         except Exception as e:
             invalid_list.append(each)
-            print(e)
+            except_list.append(e)
             continue
     end = time.clock()
     print('cost = ', end-begin)
@@ -54,5 +55,5 @@ if __name__ == '__main__':
     print('total = ', len(dirlist))
     lg.log_cost_time(begin, end, len(dirlist), valid_num)
     lg.log_valid_list(valid_list, correct_types_list)
-    lg.log_invalid_list(invalid_list)
+    lg.log_invalid_list(invalid_list, except_list)
     lg.file_close()

@@ -26,12 +26,12 @@ class PlateDetector(object):
     步字符分割
     '''
     __img_levels = 255
-    __h_img_upper = 0.720*180
+    __h_img_upper = 0.800*180
     __h_img_lower = 0.555*180 # h只有[0,180]
     __s_img_upper = 1.0*__img_levels
     __s_img_lower = 0.400*__img_levels
     __v_img_upper = 1.000*__img_levels
-    __v_img_lower = 0.300*__img_levels
+    __v_img_lower = 0.150*__img_levels
     __plate_wh_upper = 5  # 车牌长宽比例上限
     __plate_wh_lower = 1.3  # 车牌长宽比例下限
     __plate_wh_least_width = 50  # 车牌至少长度
@@ -42,8 +42,8 @@ class PlateDetector(object):
     __img_norm_height = 600  # 图像标准化宽度
     __plate_region_norm_width = 300  # 车牌区域未校准时的标准化长度
     __plate_region_norm_height = 140  # 车牌区域未校准时的标准化宽度
-    __plate_tilt_type1 = 3  # 以下的可以不进行倾斜矫正，无风险
-    __plate_tilt_type2 = 7  # 以下的进行简单的旋转矫正， 风险较小，主要集中在测量角度的精确度上
+    __plate_tilt_type1 = -1  # 以下的可以不进行倾斜矫正，无风险
+    __plate_tilt_type2 = -1  # 以下的进行简单的旋转矫正， 风险较小，主要集中在测量角度的精确度上
     # 其余的进行透视变换矫正，风险最大，主要集中在四点定位准确度上
     __is_plate_model_save_path = '/src/python/train_data/is_plate/is_plate_svm_model.model'
     __project_root_path = u''  # 绝对项目路径
@@ -301,6 +301,8 @@ class PlateDetector(object):
                 img_correct_gray = cv2.cvtColor(img_correct, cv2.COLOR_BGR2GRAY)
                 _, img_correct = cv2.threshold(img_correct_gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
                 if self.__isPlate(img_correct):  # 通过svm，判断是否是车牌
+                    # 这里的分类效果不好，容易造成后面的问题，注意捕获异常处理，问题包括，一张图片抓到了除了车牌以外的
+                    # 蓝色区域，如果这里失效，则会导致在分割的时候获取boxing msg的时候出现中断，导致第一张处理的结果失效。
                     img_frame = self.__deletePlateFrames(img_correct)
                     # show(img_frame)
                     erode_kernel = np.ones((2, 2))

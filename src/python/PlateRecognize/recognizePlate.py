@@ -25,9 +25,15 @@ def recognizePlate(img):
     '''
     img_mat = det.getPlateRegion(img)
     img_out_bin, img_out_gray, correct_types = det.plateCorrect(img_mat)
+    img_out_real_bin, img_out_real_gray, correct_real_types, res_list = [], [], [], []
     for ind, each in enumerate(img_out_bin):
         roi_set = seg.plateSegment(each, is_saveGray)
-        res_list = CharsPredict.predict_chars(roi_set)
+        if roi_set is not None:
+            res_list_tmp = CharsPredict.predict_chars(roi_set)
+            res_list.append(res_list_tmp)
+            img_out_real_bin.append(img_out_bin[ind])
+            img_out_real_gray.append(img_out_gray[ind])
+            correct_real_types.append(correct_types[ind])
     return res_list, correct_types, img_out_bin, img_out_gray
 
 

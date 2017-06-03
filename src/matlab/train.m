@@ -194,9 +194,9 @@ Mdl = fitcecoc(feature,type,'Learners',t);
 % feature = feature{1} ;
 % labels = struct2cell(load(label_mat_path)) ;
 % labels = labels{1} ;
-% t = templateSVM('Standardize',1) ;
-% Mdl = fitcecoc(feature,labels,'Learners',t);
-% save(svm_model_path,'Mdl') ;
+t = templateSVM('Standardize',1) ;
+Mdl = fitcecoc(feature,labels,'Learners',t);
+save(svm_model_path,'Mdl') ;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
