@@ -1,0 +1,154 @@
+-----------------------------------------------------------------------------
+Author: FesianXu 
+Version: version 0.1 
+Coding Date: 2017/5/23 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏    The logger setting is: 
+      The Logger files restore in folder: G:\电子工程\项目集合\PlateRecognize/test_record/txt_files/  
+      Whether turn on recording function: True 
+      Whether turn on saving plates recognition result images: True 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  current date = 2017-06-04 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  current time = 11:12:07  
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  Recognize the plates in folder = F:/opencvjpg/test_img/ 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  Run in platform = Python 3.5 in Anaconda, with TensorFlow, LibSVM, scikit-learn, opencv-python 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏    The costing time = 29.431827 seconds, with processing 100 images 
+      Each images takes 0.294318 seconds average 
+      Valid images takes 0.367898 seconds average 
+      Valid images counts = 80 
+      Invalid images counts = 20 
+      Total Image counts = 100 
+      Valid Proportion: 0.800000 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  The name list of successful plates recognition: 
+***************************
+Type 1 has 0 images 
+Type 2 has 0 images 
+Type 3 has 80 images 
+***************************
+∮ Don not need to correct images name list: 
+***************************
+∮ Just simply rotate the plate to correct images name list: 
+***************************
+∮ Use projective transform to correct plate images name list: 
+No.1   1.JPG
+No.2   10.JPG
+No.3   100.jpg
+No.4   10000.JPG
+No.5   1008.jpg
+No.6   1009.jpg
+No.7   11.JPG
+No.8   12.JPG
+No.9   14.JPG
+No.10   16.JPG
+No.11   17.jpg
+No.12   18.JPG
+No.13   2.JPG
+No.14   20.JPG
+No.15   21.JPG
+No.16   22.jpg
+No.17   24.JPG
+No.18   25.JPG
+No.19   26.JPG
+No.20   27.JPG
+No.21   29.JPG
+No.22   30.JPG
+No.23   33.JPG
+No.24   35.JPG
+No.25   36.JPG
+No.26   37.JPG
+No.27   38.JPG
+No.28   39.JPG
+No.29   4.JPG
+No.30   40.JPG
+No.31   41.jpg
+No.32   42.JPG
+No.33   43.JPG
+No.34   44.JPG
+No.35   45.JPG
+No.36   46.JPG
+No.37   47.JPG
+No.38   49.JPG
+No.39   5.JPG
+No.40   51.JPG
+No.41   52.jpg
+No.42   53.jpg
+No.43   54.jpg
+No.44   55.jpg
+No.45   56.jpg
+No.46   57.jpg
+No.47   58.jpg
+No.48   59.jpg
+No.49   60.jpg
+No.50   61.jpg
+No.51   63.jpg
+No.52   64.jpg
+No.53   65.jpg
+No.54   66.jpg
+No.55   67.jpg
+No.56   68.jpg
+No.57   69.jpg
+No.58   71.jpg
+No.59   72.jpg
+No.60   73.jpg
+No.61   74.jpg
+No.62   78.jpg
+No.63   79.jpg
+No.64   8.JPG
+No.65   80.jpg
+No.66   81.jpg
+No.67   82.jpg
+No.68   83.jpg
+No.69   84.jpg
+No.70   88.jpg
+No.71   89.jpg
+No.72   9.JPG
+No.73   91.jpg
+No.74   92.jpg
+No.75   93.jpg
+No.76   94.jpg
+No.77   95.jpg
+No.78   96.jpg
+No.79   97.jpg
+No.80   98.jpg
+***************************
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  The name list of failing plates recognition: 
+No.           image's Name     Fail reasons    
+No.0            13.JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.1            15.JPG      list index out of range    
+No.2            19.JPG      list index out of range    
+No.3            23.jpg      list index out of range    
+No.4            28.JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.5            31.JPG      list index out of range    
+No.6            32.JPG      list index out of range    
+No.7            34.JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.8            48.JPG      list index out of range    
+No.9            50.JPG      list index out of range    
+No.10            6.JPG      list index out of range    
+No.11            62.jpg      list index out of range    
+No.12            7.JPG      list index out of range    
+No.13            70.jpg      list index out of range    
+No.14            75.jpg      list index out of range    
+No.15            76.jpg      list index out of range    
+No.16            77.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.17            85.jpg      n_samples=2 should be >= n_clusters=4    
+No.18            86.jpg      list index out of range    
+No.19            87.jpg      list index out of range    
+-----------------------------------------------------------------------------

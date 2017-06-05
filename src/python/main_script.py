@@ -20,9 +20,14 @@ det = PlateDetector.PlateDetector()
 seg = PlateSegment.PlateSegment(det.getImageNormalizedWidth(), det.getImageNormalizedHeight())
 is_saveGray = False
 
+
+def show(img):
+    cv2.imshow('test', img)
+    cv2.waitKey(-1)
+
 if __name__ == '__main__':
     path = 'F:/opencvjpg/new_plate_img/'
-    name = '1014.jpg'
+    name = '1143.jpg'
     file_name = path+name
     img = cv2.imread(file_name)
     # res, correct_types, img_bin, _ = recog.recognizePlate(img)
@@ -30,6 +35,9 @@ if __name__ == '__main__':
 
     img_mat = det.getPlateRegion(img)
     img_out_bin, img_out_gray, _ = det.plateCorrect(img_mat)
+    for each in img_mat:
+        show(each)
+
     for ind, each in enumerate(img_out_bin):
         roi_set = seg.plateSegment(each, is_saveGray)
         if roi_set is not None:

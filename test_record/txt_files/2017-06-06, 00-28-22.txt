@@ -1,0 +1,165 @@
+-----------------------------------------------------------------------------
+Author: FesianXu 
+Version: version 0.1 
+Coding Date: 2017/5/23 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏    The logger setting is: 
+      The Logger files restore in folder: G:\电子工程\项目集合\PlateRecognize/test_record/txt_files/  
+      Whether turn on recording function: True 
+      Whether turn on saving plates recognition result images: True 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  current date = 2017-06-06 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  current time = 00:28:22  
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  Recognize the plates in folder = F:/opencvjpg/test_img/ 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  Run in platform = Python 3.5 in Anaconda, with TensorFlow, LibSVM, scikit-learn, opencv-python 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏    The costing time = 30.142919 seconds, with processing 100 images 
+      Each images takes 0.301429 seconds average 
+      Valid images takes 0.386448 seconds average 
+      Valid images counts = 78 
+      Invalid images counts = 22 
+      Total Image counts = 100 
+      Valid Proportion: 0.780000 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  The name list of successful plates recognition: 
+***************************
+Type 1 has 16 images 
+Type 2 has 13 images 
+Type 3 has 58 images 
+***************************
+∮ Don not need to correct images name list: 
+No.1   1008.jpg
+No.2   14.JPG
+No.3   17.jpg
+No.4   18.JPG
+No.5   24.JPG
+No.6   29.JPG
+No.7   39.JPG
+No.8   41.jpg
+No.9   43.JPG
+No.10   58.jpg
+No.11   60.jpg
+No.12   78.jpg
+No.13   79.jpg
+No.14   8.JPG
+No.15   80.jpg
+No.16   84.jpg
+***************************
+∮ Just simply rotate the plate to correct images name list: 
+No.1   1.JPG
+No.2   11.JPG
+No.3   21.JPG
+No.4   37.JPG
+No.5   41.jpg
+No.6   47.JPG
+No.7   66.jpg
+No.8   69.jpg
+No.9   74.jpg
+No.10   77.jpg
+No.11   81.jpg
+No.12   83.jpg
+No.13   9.JPG
+***************************
+∮ Use projective transform to correct plate images name list: 
+No.1   1.JPG
+No.2   10.JPG
+No.3   100.jpg
+No.4   10000.JPG
+No.5   1009.jpg
+No.6   11.JPG
+No.7   16.JPG
+No.8   2.JPG
+No.9   20.JPG
+No.10   21.JPG
+No.11   22.jpg
+No.12   24.JPG
+No.13   25.JPG
+No.14   26.JPG
+No.15   27.JPG
+No.16   30.JPG
+No.17   33.JPG
+No.18   35.JPG
+No.19   36.JPG
+No.20   38.JPG
+No.21   4.JPG
+No.22   40.JPG
+No.23   42.JPG
+No.24   44.JPG
+No.25   45.JPG
+No.26   46.JPG
+No.27   49.JPG
+No.28   5.JPG
+No.29   51.JPG
+No.30   52.jpg
+No.31   53.jpg
+No.32   54.jpg
+No.33   55.jpg
+No.34   56.jpg
+No.35   57.jpg
+No.36   59.jpg
+No.37   60.jpg
+No.38   61.jpg
+No.39   63.jpg
+No.40   64.jpg
+No.41   65.jpg
+No.42   67.jpg
+No.43   68.jpg
+No.44   71.jpg
+No.45   72.jpg
+No.46   73.jpg
+No.47   8.JPG
+No.48   82.jpg
+No.49   84.jpg
+No.50   88.jpg
+No.51   89.jpg
+No.52   9.JPG
+No.53   91.jpg
+No.54   92.jpg
+No.55   93.jpg
+No.56   94.jpg
+No.57   95.jpg
+No.58   98.jpg
+***************************
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  The name list of failing plates recognition: 
+No.           image's Name     Fail reasons    
+No.0            12.JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.1            13.JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.2            15.JPG      list index out of range    
+No.3            19.JPG      list index out of range    
+No.4            23.jpg      list index out of range    
+No.5            28.JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.6            31.JPG      list index out of range    
+No.7            32.JPG      list index out of range    
+No.8            34.JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.9            48.JPG      list index out of range    
+No.10            50.JPG      list index out of range    
+No.11            6.JPG      list index out of range    
+No.12            62.jpg      list index out of range    
+No.13            7.JPG      list index out of range    
+No.14            70.jpg      list index out of range    
+No.15            75.jpg      list index out of range    
+No.16            76.jpg      list index out of range    
+No.17            85.jpg      n_samples=2 should be >= n_clusters=4    
+No.18            86.jpg      list index out of range    
+No.19            87.jpg      list index out of range    
+No.20            96.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.21            97.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+-----------------------------------------------------------------------------

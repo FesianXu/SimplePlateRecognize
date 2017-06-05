@@ -224,7 +224,6 @@ class PlateSegment(object):
         :return: roi_set 返回车牌分割的字符图像
         '''
         chars_contours = self.__deleteSmallCharRegions(img)
-        # centers_loc, width_ideal, height_ideal = self.__getCharsBoxingMsg(chars_contours)
         try:
             centers_loc, width_ideal, height_ideal = self.__getCharsBoxingMsg(chars_contours)
         except ValueError:

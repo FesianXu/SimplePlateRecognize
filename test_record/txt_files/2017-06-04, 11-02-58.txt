@@ -1,0 +1,391 @@
+-----------------------------------------------------------------------------
+Author: FesianXu 
+Version: version 0.1 
+Coding Date: 2017/5/23 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏    The logger setting is: 
+      The Logger files restore in folder: G:\电子工程\项目集合\PlateRecognize/test_record/txt_files/  
+      Whether turn on recording function: True 
+      Whether turn on saving plates recognition result images: True 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  current date = 2017-06-04 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  current time = 11:02:58  
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  Recognize the plates in folder = F:/opencvjpg/new_plate_img/ 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  Run in platform = Python 3.5 in Anaconda, with TensorFlow, LibSVM, scikit-learn, opencv-python 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏    The costing time = 65.780278 seconds, with processing 325 images 
+      Each images takes 0.202401 seconds average 
+      Valid images takes 0.319322 seconds average 
+      Valid images counts = 206 
+      Invalid images counts = 119 
+      Total Image counts = 325 
+      Valid Proportion: 0.633846 
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  The name list of successful plates recognition: 
+***************************
+Type 1 has 0 images 
+Type 2 has 0 images 
+Type 3 has 206 images 
+***************************
+∮ Don not need to correct images name list: 
+***************************
+∮ Just simply rotate the plate to correct images name list: 
+***************************
+∮ Use projective transform to correct plate images name list: 
+No.1   1.JPG
+No.2   10 (2).JPG
+No.3   10.JPG
+No.4   100 (2).jpg
+No.5   100.jpg
+No.6   10000.JPG
+No.7   1001.jpg
+No.8   1006.JPG
+No.9   1007.JPG
+No.10   1008 (2).jpg
+No.11   1008.jpg
+No.12   1009 (2).jpg
+No.13   1009.jpg
+No.14   101.jpg
+No.15   1010.jpg
+No.16   1011.jpg
+No.17   1013.JPG
+No.18   1014.jpg
+No.19   1015.jpg
+No.20   1016.jpg
+No.21   1017.JPG
+No.22   1018.JPG
+No.23   1021.jpg
+No.24   1023.jpg
+No.25   1024.jpg
+No.26   1025.jpg
+No.27   1026.jpg
+No.28   1027.JPG
+No.29   1028.JPG
+No.30   1029.jpg
+No.31   1031.JPG
+No.32   1035.JPG
+No.33   1036.JPG
+No.34   1040.jpg
+No.35   1041.JPG
+No.36   1043.JPG
+No.37   1065.jpg
+No.38   1067.jpg
+No.39   1068.jpg
+No.40   1069.jpg
+No.41   1070.jpg
+No.42   1071.jpg
+No.43   1073.jpg
+No.44   1075.jpg
+No.45   1076.jpg
+No.46   1078.jpg
+No.47   1079.jpg
+No.48   1082.jpg
+No.49   1083.jpg
+No.50   1084.jpg
+No.51   1087.jpg
+No.52   1088.jpg
+No.53   1089.jpg
+No.54   1090.jpg
+No.55   1091.jpg
+No.56   1093.jpg
+No.57   1094.jpg
+No.58   1097.jpg
+No.59   1099.jpg
+No.60   11.JPG
+No.61   1100.jpg
+No.62   1101.jpg
+No.63   1102.jpg
+No.64   1103.jpg
+No.65   1104.jpg
+No.66   1107.jpg
+No.67   1108.jpg
+No.68   1109.jpg
+No.69   1111.jpg
+No.70   1115.jpg
+No.71   1117.jpg
+No.72   1118.jpg
+No.73   1141.jpg
+No.74   1142.jpg
+No.75   1144.jpg
+No.76   1145.jpg
+No.77   1146.jpg
+No.78   1148.jpg
+No.79   1151.jpg
+No.80   1152.jpg
+No.81   1160.jpg
+No.82   1161.jpg
+No.83   1172.jpg
+No.84   1174.jpg
+No.85   1178.jpg
+No.86   1180.jpg
+No.87   1181.jpg
+No.88   1185.jpg
+No.89   1186.jpg
+No.90   1190.jpg
+No.91   1194.jpg
+No.92   1197.jpg
+No.93   1198.jpg
+No.94   1199.jpg
+No.95   12 (2).JPG
+No.96   12.jpg
+No.97   1200.jpg
+No.98   1201.jpg
+No.99   1204.jpg
+No.100   14 (2).JPG
+No.101   14.jpg
+No.102   16 (2).JPG
+No.103   16.jpg
+No.104   17 (2).jpg
+No.105   18 (2).JPG
+No.106   18.jpg
+No.107   19.jpg
+No.108   2.JPG
+No.109   20 (2).JPG
+No.110   20.jpg
+No.111   21 (2).JPG
+No.112   21.jpg
+No.113   22 (2).jpg
+No.114   23.jpg
+No.115   24.JPG
+No.116   25 (2).JPG
+No.117   26 (2).JPG
+No.118   26.jpg
+No.119   27 (2).JPG
+No.120   29 (2).JPG
+No.121   30 (2).JPG
+No.122   31.jpg
+No.123   33.JPG
+No.124   34.jpg
+No.125   35 (2).JPG
+No.126   35.jpg
+No.127   36 (2).JPG
+No.128   37 (2).JPG
+No.129   38 (2).JPG
+No.130   39.JPG
+No.131   4 (2).JPG
+No.132   40 (2).JPG
+No.133   40.jpg
+No.134   41 (2).jpg
+No.135   42.JPG
+No.136   43.JPG
+No.137   44 (2).JPG
+No.138   45 (2).JPG
+No.139   46 (2).JPG
+No.140   47 (2).JPG
+No.141   49 (2).JPG
+No.142   5 (2).JPG
+No.143   51 (2).JPG
+No.144   52 (2).jpg
+No.145   52.jpg
+No.146   53 (2).jpg
+No.147   53.jpg
+No.148   54 (2).jpg
+No.149   54.jpg
+No.150   55 (2).jpg
+No.151   56 (2).jpg
+No.152   57 (2).jpg
+No.153   58 (2).jpg
+No.154   59 (2).jpg
+No.155   59.jpg
+No.156   60 (2).jpg
+No.157   60.jpg
+No.158   61 (2).jpg
+No.159   62.jpg
+No.160   63 (2).jpg
+No.161   63.jpg
+No.162   64 (2).jpg
+No.163   64.jpg
+No.164   65 (2).jpg
+No.165   66 (2).jpg
+No.166   66.jpg
+No.167   67 (2).jpg
+No.168   67.jpg
+No.169   68 (2).jpg
+No.170   69 (2).jpg
+No.171   69.jpg
+No.172   70.jpg
+No.173   71 (2).jpg
+No.174   72 (2).jpg
+No.175   72.jpg
+No.176   73 (2).jpg
+No.177   74 (2).jpg
+No.178   74.jpg
+No.179   78 (2).jpg
+No.180   79 (2).jpg
+No.181   8.JPG
+No.182   80 (2).jpg
+No.183   80.jpg
+No.184   81 (2).jpg
+No.185   82 (2).jpg
+No.186   82.jpg
+No.187   83 (2).jpg
+No.188   84 (2).jpg
+No.189   85.jpg
+No.190   86.jpg
+No.191   88 (2).jpg
+No.192   89 (2).jpg
+No.193   89.jpg
+No.194   9.JPG
+No.195   90.jpg
+No.196   91 (2).jpg
+No.197   91.jpg
+No.198   92 (2).jpg
+No.199   92.jpg
+No.200   93 (2).jpg
+No.201   93.jpg
+No.202   94 (2).jpg
+No.203   95.jpg
+No.204   96.jpg
+No.205   97.jpg
+No.206   98.jpg
+***************************
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+∏  The name list of failing plates recognition: 
+No.           image's Name     Fail reasons    
+No.0            1000.jpg      list index out of range    
+No.1            1020.JPG      list index out of range    
+No.2            1030.JPG      list index out of range    
+No.3            1045.JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.4            1072.jpg      list index out of range    
+No.5            1074.jpg      list index out of range    
+No.6            1077.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.7            1080.jpg      list index out of range    
+No.8            1081.jpg      list index out of range    
+No.9            1085.jpg      list index out of range    
+No.10            1086.jpg      list index out of range    
+No.11            1092.jpg      list index out of range    
+No.12            1095.jpg      float division by zero    
+No.13            1096.jpg      list index out of range    
+No.14            1098.jpg      list index out of range    
+No.15            1105.jpg      list index out of range    
+No.16            1106.jpg      list index out of range    
+No.17            1110.jpg      list index out of range    
+No.18            1112.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.19            1113.jpg      list index out of range    
+No.20            1114.jpg      list index out of range    
+No.21            1116.jpg      list index out of range    
+No.22            1119.jpg      list index out of range    
+No.23            1120.jpg      list index out of range    
+No.24            1130.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.25            1131.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.26            1140.jpg      list index out of range    
+No.27            1143.jpg      list index out of range    
+No.28            1147.jpg      list index out of range    
+No.29            1150.jpg      list index out of range    
+No.30            1153.jpg      list index out of range    
+No.31            1154.jpg      list index out of range    
+No.32            1155.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.33            1156.jpg      list index out of range    
+No.34            1157.jpg      list index out of range    
+No.35            1158.jpg      list index out of range    
+No.36            1159.jpg      list index out of range    
+No.37            1162.jpg      list index out of range    
+No.38            1173.jpg      list index out of range    
+No.39            1175.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.40            1176.jpg      list index out of range    
+No.41            1177.jpg      list index out of range    
+No.42            1179.jpg      list index out of range    
+No.43            1182.jpg      list index out of range    
+No.44            1183.jpg      list index out of range    
+No.45            1184.jpg      list index out of range    
+No.46            1187.jpg      list index out of range    
+No.47            1191.jpg      list index out of range    
+No.48            1192.jpg      list index out of range    
+No.49            1193.jpg      list index out of range    
+No.50            1195.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.51            1196.jpg      list index out of range    
+No.52            1202.jpg      float division by zero    
+No.53            1203.jpg      list index out of range    
+No.54            1205.jpg      list index out of range    
+No.55            13 (2).JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.56            13.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.57            15 (2).JPG      list index out of range    
+No.58            15.jpg      list index out of range    
+No.59            17.jpg      list index out of range    
+No.60            19 (2).JPG      list index out of range    
+No.61            22.jpg      list index out of range    
+No.62            23 (2).jpg      list index out of range    
+No.63            25.jpg      list index out of range    
+No.64            27.jpg      list index out of range    
+No.65            28 (2).JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.66            28.jpg      list index out of range    
+No.67            29.jpg      list index out of range    
+No.68            30.jpg      list index out of range    
+No.69            31 (2).JPG      list index out of range    
+No.70            32 (2).JPG      list index out of range    
+No.71            32.jpg      list index out of range    
+No.72            34 (2).JPG      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.73            36.jpg      list index out of range    
+No.74            37.jpg      list index out of range    
+No.75            38.jpg      list index out of range    
+No.76            4.jpg      list index out of range    
+No.77            41.jpg      list index out of range    
+No.78            44.jpg      list index out of range    
+No.79            45.jpg      list index out of range    
+No.80            46.jpg      n_samples=2 should be >= n_clusters=4    
+No.81            47.jpg      list index out of range    
+No.82            48 (2).JPG      list index out of range    
+No.83            48.jpg      list index out of range    
+No.84            49.jpg      float division by zero    
+No.85            5.jpg      list index out of range    
+No.86            50 (2).JPG      list index out of range    
+No.87            50.jpg      list index out of range    
+No.88            51.jpg      list index out of range    
+No.89            55.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.90            56.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.91            57.jpg      list index out of range    
+No.92            58.jpg      list index out of range    
+No.93            6.JPG      list index out of range    
+No.94            61.jpg      list index out of range    
+No.95            62 (2).jpg      list index out of range    
+No.96            65.jpg      list index out of range    
+No.97            68.jpg      list index out of range    
+No.98            7.JPG      list index out of range    
+No.99            70 (2).jpg      list index out of range    
+No.100            71.jpg      float division by zero    
+No.101            73.jpg      list index out of range    
+No.102            75 (2).jpg      list index out of range    
+No.103            75.jpg      list index out of range    
+No.104            76 (2).jpg      list index out of range    
+No.105            76.jpg      list index out of range    
+No.106            77 (2).jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.107            77.jpg      list index out of range    
+No.108            78.jpg      list index out of range    
+No.109            79.jpg      list index out of range    
+No.110            81.jpg      list index out of range    
+No.111            83.jpg      D:\Build\OpenCV\opencv-3.2.0\modules\imgproc\src\imgwarp.cpp:3492: error: (-215) ssize.width > 0 && ssize.height > 0 in function cv::resize
+    
+No.112            84.jpg      list index out of range    
+No.113            85 (2).jpg      n_samples=2 should be >= n_clusters=4    
+No.114            86 (2).jpg      list index out of range    
+No.115            87 (2).jpg      list index out of range    
+No.116            87.jpg      list index out of range    
+No.117            88.jpg      list index out of range    
+No.118            94.jpg      list index out of range    
+-----------------------------------------------------------------------------
